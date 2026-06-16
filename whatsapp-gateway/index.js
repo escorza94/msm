@@ -1,0 +1,126 @@
+const express = require('express');
+const cors = require('cors');
+const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
+const qrcode = require('qrcode');
+const qrcodeTerminal = require('qrcode-terminal');
+const { Server } = require('socket.io');
+const http = require('http');
+
+const PHP_WEBHOOK_URL = `http://127.0.0.1/MUEBES_SAN_MARTIN_GESTOR/whatsapp/webhook`;
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: '*' } });
+
+app.use(cors()); // Soluciona el error de bloqueo del navegador al pedir el QR
+app.use(express.json({ limit: '50mb' })); // Aumentamos límite para recibir archivos
+
+const client = new Client({ authStrategy: new LocalAuth(), puppeteer: { args: ['--no-sandbox', '--disable-setuid-sandbox'] } });
+let qrCodeDataUrl = ''; let isConnected = false;
+
+client.on('qr', async (qr) => { 
+    console.log('Generando nuevo código QR para escanear...');
+    qrcodeTerminal.generate(qr, { small: true }); // Imprime el QR en la terminal por seguridad
+    qrCodeDataUrl = await qrcode.toDataURL(qr); 
+    io.emit('qr_update', qrCodeDataUrl); 
+});
+client.on('ready', () => { console.log('✅ ¡WhatsApp vinculado y listo!'); isConnected = true; qrCodeDataUrl = ''; io.emit('wa_ready'); });
+client.on('message', async (msg) => {
+    let cuerpoMensaje = msg.body;
+    let nombreContacto = msg.from.split('@')[0];
+    let tipoMensaje = 'texto';
+    let archivoData = null;
+
+    if (msg.hasMedia) {
+        try {
+            const media = await msg.downloadMedia();
+            if (media) {
+                archivoData = `data:${media.mimetype};base64,${media.data}`;
+                if (media.mimetype.includes('image')) tipoMensaje = 'imagen';
+                else if (media.mimetype.includes('audio') || media.mimetype.includes('ogg')) tipoMensaje = 'audio';
+                else if (media.mimetype.includes('video')) tipoMensaje = 'video';
+                else tipoMensaje = 'archivo';
+            }
+        } catch (e) { console.error('Error al descargar media entrante:', e); }
+    }
+
+    if (msg.from === 'status@broadcast') {
+        const remitente = msg.author ? msg.author.split('@')[0] : 'Alguien';
+        cuerpoMensaje = msg.hasMedia ? cuerpoMensaje : `[Estado de ${remitente}]: ${msg.body}`;
+        nombreContacto = 'Feed de Estados';
+    } else {
+        try {
+            const contact = await msg.getContact();
+            nombreContacto = contact.name || contact.pushname || nombreContacto;
+        } catch (e) { /* Ignorar si falla la consulta del contacto */ }
+    }
+    console.log(`📩 Mensaje RECIBIDO de ${msg.from} (${nombreContacto}) - Tipo: ${tipoMensaje}`);
+    io.emit('mensaje_entrante', { whatsapp_id: msg.from, mensaje: cuerpoMensaje, archivo: archivoData, timestamp: msg.timestamp, nombre: nombreContacto, tipo: tipoMensaje });
+    try { await fetch(PHP_WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ whatsapp_id: msg.from, mensaje: cuerpoMensaje, archivo: archivoData, timestamp: msg.timestamp, nombre: nombreContacto, tipo: tipoMensaje, direccion: 'entrante' }) }); } catch (err) { console.error('Error Webhook:', err.message); }
+});
+client.on('message_create', async (msg) => { 
+    if (msg.fromMe && !msg.body.endsWith('\u200B')) { 
+        let cuerpoMensaje = msg.body;
+        let tipoMensaje = 'texto';
+        let archivoData = null;
+
+        if (msg.hasMedia) {
+            try {
+                const media = await msg.downloadMedia();
+                if (media) {
+                    archivoData = `data:${media.mimetype};base64,${media.data}`;
+                    if (media.mimetype.includes('image')) tipoMensaje = 'imagen';
+                    else if (media.mimetype.includes('audio') || media.mimetype.includes('ogg')) tipoMensaje = 'audio';
+                    else if (media.mimetype.includes('video')) tipoMensaje = 'video';
+                    else tipoMensaje = 'archivo';
+                }
+            } catch (e) { console.error('Error al descargar media saliente:', e); }
+        }
+
+        console.log(`📱 Mensaje ENVIADO desde otro dispositivo a ${msg.to} - Tipo: ${tipoMensaje}`);
+        io.emit('mensaje_saliente_fisico', { whatsapp_id: msg.to, mensaje: cuerpoMensaje, archivo: archivoData, timestamp: msg.timestamp, tipo: tipoMensaje }); 
+        try { await fetch(PHP_WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ whatsapp_id: msg.to, mensaje: cuerpoMensaje, archivo: archivoData, timestamp: msg.timestamp, nombre: msg.to.split('@')[0], tipo: tipoMensaje, direccion: 'saliente' }) }); } catch (err) { console.error('Error Webhook (Saliente):', err.message); }
+    } 
+});
+client.initialize();
+
+app.get('/api/status', (req, res) => res.json({ isConnected, qr: qrCodeDataUrl }));
+app.post('/api/enviar', async (req, res) => {
+    const { numero, mensaje, archivo, nombreArchivo } = req.body;
+    console.log(`💻 Petición del CRM para ENVIAR a ${numero}: ${mensaje}`);
+    if (!isConnected) return res.status(500).json({ error: 'WhatsApp no está vinculado' });
+    
+    try { 
+        const chatId = numero.includes('@') ? numero : `${numero}@c.us`;
+        
+        if (archivo) {
+            const matches = archivo.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+            if (matches && matches.length === 3) {
+                const media = new MessageMedia(matches[1], matches[2], nombreArchivo);
+                await client.sendMessage(chatId, media, { caption: (mensaje || '') + '\u200B' });
+                return res.json({ success: true });
+            }
+        }
+        
+        await client.sendMessage(chatId, mensaje + '\u200B'); 
+        res.json({ success: true }); 
+    } catch (err) { 
+        console.error(`❌ Error al enviar mensaje:`, err.message || err); 
+        res.status(500).json({ error: err.message || 'Error desconocido' }); 
+    }
+});
+server.listen(3000, () => console.log('🤖 Node.js Gateway en http://127.0.0.1:3000'));
+
+const gracefulShutdown = async () => {
+    console.log('\n🛑 Cerrando la conexión de WhatsApp de forma segura...');
+    try {
+        await client.destroy();
+        console.log('✅ Cliente cerrado correctamente.');
+        process.exit(0);
+    } catch (err) {
+        console.error('❌ Error al cerrar el cliente:', err);
+        process.exit(1);
+    }
+};
+
+process.on('SIGINT', gracefulShutdown);
+process.on('SIGTERM', gracefulShutdown);
