@@ -20,7 +20,11 @@ class Router {
     
     public function dispatch($uri, $method) {
         $scriptName = dirname($_SERVER['SCRIPT_NAME']);
-        $uri = str_replace($scriptName, '', $uri);
+        // Solo se reemplaza el nombre del script si no es el directorio raíz ('/').
+        // Esto evita que se eliminen todas las diagonales de la URI.
+        if ($scriptName !== '/') {
+            $uri = str_replace($scriptName, '', $uri);
+        }
         $uri = parse_url($uri, PHP_URL_PATH) ?: '/';
         if (strpos($uri, '/index.php') === 0) { $uri = substr($uri, 10) ?: '/'; }
 
