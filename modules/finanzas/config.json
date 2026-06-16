@@ -1,0 +1,17 @@
+{
+    "name": "finanzas",
+    "version": "1.0.0",
+    "active": true,
+    "permissions": [
+        {
+            "name": "finanzas.ver",
+            "description": "Ver el libro mayor y estados de cuenta"
+        },
+        {
+            "name": "finanzas.crear",
+            "description": "Registrar ingresos, egresos y traspasos"
+        }
+    ],
+    "description": "",
+    "icon": "fa-coins"
+}

@@ -1,0 +1,4 @@
+ALTER TABLE clientes 
+ADD COLUMN latitud DECIMAL(10,8) NULL AFTER direccion,
+ADD COLUMN longitud DECIMAL(11,8) NULL AFTER latitud,
+ADD COLUMN enlace_maps VARCHAR(255) NULL AFTER longitud;

@@ -1,0 +1,11 @@
+{
+    "name": "help",
+    "active": true,
+    "version": "1.0.0",
+    "icon": "fa-life-ring text-teal-500",
+    "permissions": [
+        {"name": "help.ver", "description": "Ver base de conocimiento"},
+        {"name": "help.crear", "description": "Crear y editar artículos/categorías"}
+    ]
+    
+}

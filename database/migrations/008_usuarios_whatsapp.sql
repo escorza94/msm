@@ -1,0 +1,2 @@
+ALTER TABLE `users` ADD COLUMN `whatsapp_id` VARCHAR(50) NULL DEFAULT NULL AFTER `password`;
+-- Nota: Si tu tabla users no tiene un campo para el rol, deberás crearlo también, ej: ALTER TABLE `users` ADD COLUMN `rol` VARCHAR(50) DEFAULT 'asesor';

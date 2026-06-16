@@ -1,0 +1,2 @@
+ALTER TABLE `ventas_abonos` ADD COLUMN `cuenta_id` INT(11) NULL AFTER `usuario_id`;
+ALTER TABLE `ventas_abonos` ADD FOREIGN KEY (`cuenta_id`) REFERENCES `finanzas_cuentas`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;

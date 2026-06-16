@@ -1,0 +1,11 @@
+{
+    "name": "clientes",
+    "version": "1.0",
+    "active": true,
+    "icon": "fa-user-tag text-blue-500",
+    "permissions": [
+        {"name": "clientes.ver", "description": "Ver el directorio de clientes"},
+        {"name": "clientes.crear", "description": "Crear o editar clientes en CRM"}
+    ]
+    
+}

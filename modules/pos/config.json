@@ -1,0 +1,17 @@
+{
+    "name": "pos",
+    "version": "1.0.0",
+    "active": true,
+    "permissions": [
+        {
+            "name": "pos.ver",
+            "description": "Ver el Punto de Venta (POS) y catálogo"
+        },
+        {
+            "name": "pos.crear",
+            "description": "Crear y cobrar ventas"
+        }
+    ],
+    "description": "",
+    "icon": "fa-cash-register"
+}

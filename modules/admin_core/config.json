@@ -1,0 +1,9 @@
+{
+    "name": "admin_core",
+    "version": "1.0.0",
+    "active": true,
+    "permissions": [
+        {"name": "admin_core.ver", "description": "Acceso al panel core y ajustes globales del sistema"}
+    ]
+    
+}

@@ -1,0 +1,11 @@
+{
+    "name": "marketing",
+    "version": "1.0.0",
+    "description": "Gestor de Campañas, Pautas y Auto-respuestas",
+    "icon": "fa-bullhorn text-pink-500",
+    "active": true,
+    "permissions": [
+        {"name": "marketing.ver", "description": "Ver listado de pautas publicitarias"},
+        {"name": "marketing.crear", "description": "Crear, editar y apagar auto-respuestas de marketing"}
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "name": "documentos",
+    "version": "1.0",
+    "active": true,
+    "icon": "fa-print",
+    "permissions": [
+    {"name": "documentos.ver", "description": "Configurar plantillas de impresión y formatos"}
+]
+
+}

@@ -1,0 +1,1 @@
+ALTER TABLE `ventas` ADD COLUMN `estado_entrega` ENUM('pendiente', 'entregado') NOT NULL DEFAULT 'pendiente' AFTER `estado_pago`;

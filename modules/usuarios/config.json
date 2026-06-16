@@ -1,0 +1,11 @@
+{
+    "name": "usuarios",
+    "version": "1.0.0",
+    "active": true,
+    "permissions": [
+        {"name": "usuarios.ver", "description": "Gestionar usuarios del sistema"},
+        {"name": "roles.ver", "description": "Ver Matriz de Permisos (RBAC)"},
+        {"name": "roles.editar", "description": "Editar Roles y Permisos"}
+    ]
+    
+}

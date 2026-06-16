@@ -1,0 +1,14 @@
+{
+    "name": "notificaciones",
+    "active": true,
+    "icon": "fa-bell text-yellow-500",
+    "permissions": [
+        {"name": "notificaciones.configurar", "description": "Modificar reglas globales de notificaciones"}
+    ],
+    "alertas": {
+        "ventas_admin_push": true,
+        "ventas_admin_wa": true,
+        "handoff_admin_push": true,
+        "handoff_admin_wa": true
+    }
+}

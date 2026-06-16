@@ -1,0 +1,8 @@
+{
+    "name": "promociones",
+    "version": "1.0.0",
+    "active": true,
+    "description": "",
+    "icon": "fa-tag",
+    "permissions": []
+}

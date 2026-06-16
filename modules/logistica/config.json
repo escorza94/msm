@@ -1,0 +1,11 @@
+{
+    "name": "logistica",
+    "active": true,
+    "icon": "fa-truck",
+    "version": "1.0.0",
+    "permissions": [
+        {"name": "logistica.ver", "description": "Ver el tablero Kanban de envíos"},
+        {"name": "logistica.editar", "description": "Mover tarjetas y configurar tarifas"}
+    ]
+    
+}

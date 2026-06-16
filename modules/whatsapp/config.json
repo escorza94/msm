@@ -1,0 +1,13 @@
+{
+    "name": "whatsapp",
+    "version": "1.0.0",
+    "active": true,
+    "icon": "fa fa-whatsapp",
+    "permissions": [
+        {
+            "name": "whatsapp.ver",
+            "description": "Ver y responder mensajes en WhatsApp"
+        }
+    ],
+    "description": ""
+}

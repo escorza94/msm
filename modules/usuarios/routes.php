@@ -1,0 +1,21 @@
+<?php
+$router->get('/usuarios', 'UsuariosController@index');
+$router->get('/usuarios/login', 'UsuariosController@login');
+$router->post('/usuarios/login', 'UsuariosController@postLogin');
+$router->get('/usuarios/logout', 'UsuariosController@logout');
+$router->get('/usuarios/registro', 'UsuariosController@registro');
+$router->post('/usuarios/registro', 'UsuariosController@postRegistro');
+$router->get('/usuarios/configuracion', 'UsuariosController@configuracion');
+$router->get('/usuarios/perfil', 'UsuariosController@perfil');
+$router->post('/usuarios/postPerfil', 'UsuariosController@postPerfil');
+$router->get('/usuarios/nuevo', 'UsuariosController@nuevo');
+$router->post('/usuarios/nuevo', 'UsuariosController@postNuevo');
+$router->get('/usuarios/editar', 'UsuariosController@editar');
+$router->post('/usuarios/editar', 'UsuariosController@postEditar');
+$router->get('/usuarios/roles', 'RolesController@index');
+$router->get('/usuarios/roles/editar', 'RolesController@editar');
+$router->post('/usuarios/roles/guardar', 'RolesController@guardar');
+$router->post('/usuarios/permisos/guardar', 'RolesController@guardarPermiso');
+$router->post('/usuarios/roles/guardar-rol', 'RolesController@guardarRol');
+$router->get('/usuarios/roles/eliminar-rol', 'RolesController@eliminarRol');
+$router->get('/usuarios/roles/sincronizar-permisos', 'RolesController@sincronizarPermisos');

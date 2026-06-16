@@ -1,0 +1,17 @@
+{
+    "name": "proveedores",
+    "version": "1.0.0",
+    "active": true,
+    "permissions": [
+        {
+            "name": "proveedores.ver",
+            "description": "Ver el directorio de proveedores"
+        },
+        {
+            "name": "proveedores.crear",
+            "description": "Crear o editar proveedores"
+        }
+    ],
+    "description": "",
+    "icon": "fa-industry"
+}
