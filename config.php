@@ -4,7 +4,7 @@ return [
     'DB_NAME' => 'aed_crm',
     'DB_USER' => 'root',
     'DB_PASS' => '',
-    'APP_URL' => 'https://related-unsalted-elitism.ngrok-free.dev/MUEBES_SAN_MARTIN_GESTOR/',
+    'APP_URL' => 'http://localhost/MUEBES_SAN_MARTIN_GESTOR/',
     'GOOGLE_MAPS_API_KEY' => 'AIzaSyCY24rP5kEv4iuBK6u7gtItI3Q3hWhjWBg',
     'GEMINI_API_KEY' => 'AQ.Ab8RN6La52XOBoRy2qwsu3xhvznMD7U9_NjqpoGHkNX85imt-w',
     'GEMINI_MODEL' => 'gemini-3.5-flash',
