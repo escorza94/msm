@@ -1,6 +1,9 @@
 Options -Indexes
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    RewriteRule ^phpmyadmin$ - [L,NC]
+RewriteCond %{REQUEST_URI} ^/phpmyadmin [NC]
+RewriteRule .* - [L]
     RewriteRule ^(core|layouts|database|modules/.*/(Views|Controllers|Models)) - [F,L]
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d

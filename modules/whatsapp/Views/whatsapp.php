@@ -468,7 +468,8 @@
     document.addEventListener('DOMContentLoaded', () => {
         filtrarLista('individual'); // Asegurar estado inicial
         
-        const socket = io('http://127.0.0.1:3000');
+        const nodeUrl = window.location.protocol + '//' + window.location.hostname + ':3000';
+        const socket = io(nodeUrl);
         const globalStatus = document.getElementById('global-status');
 
         function updateStatus(isConnected) {
