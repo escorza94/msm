@@ -51,40 +51,6 @@ class Router {
 
 $router = new Router();
 
-$router->get('/', function() {
-    ?>
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>AED Framework | Instalado</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    </head>
-    <body class="bg-gray-50 text-gray-800 font-sans flex items-center justify-center min-h-screen">
-        <div class="max-w-2xl w-full bg-white p-8 rounded-xl shadow-lg border border-gray-100">
-            <div class="text-center mb-6">
-                <div class="w-16 h-16 bg-indigo-600 text-white rounded-full flex items-center justify-center text-3xl mx-auto shadow-md mb-4"><i class="fas fa-cube"></i></div>
-                <h1 class="text-3xl font-bold text-gray-900">¡AED Framework Instalado!</h1>
-                <p class="text-gray-500 mt-2">Tu arquitectura HMVC está configurada y lista para la acción.</p>
-            </div>
-            <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 mb-6">
-                <h2 class="text-lg font-bold text-gray-800 mb-4"><i class="fas fa-rocket text-indigo-500 mr-2"></i>Próximos Pasos Recomendados:</h2>
-                <ul class="space-y-4 text-sm text-gray-600">
-                    <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i> <div><b>1. Instalar Panel de Control:</b><br>Ejecuta <code class="bg-gray-200 text-pink-600 px-1 rounded font-mono">aed install module admin_core</code></div></li>
-                    <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i> <div><b>2. Instalar Autenticación:</b><br>Ejecuta <code class="bg-gray-200 text-pink-600 px-1 rounded font-mono">aed install module usuarios</code></div></li>
-                    <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i> <div><b>3. Crear Módulos Propios:</b><br>Ejecuta <code class="bg-gray-200 text-pink-600 px-1 rounded font-mono">aed install module &lt;nombre&gt;</code></div></li>
-                    <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i> <div><b>4. Crear Migraciones:</b><br>Ejecuta <code class="bg-gray-200 text-pink-600 px-1 rounded font-mono">aed make:migration &lt;nombre&gt;</code></div></li>
-                </ul>
-            </div>
-            <p class="text-center text-xs text-gray-400">Revisa el <code class="text-gray-500 font-mono">MANUAL_USUARIO_AED.md</code> para más detalles.</p>
-        </div>
-    </body>
-    </html>
-    <?php
-});
-
 spl_autoload_register(function ($class_name) {
     foreach (scandir(MODULES_PATH) as $module) {
         if ($module === '.' || $module === '..') continue;

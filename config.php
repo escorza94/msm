@@ -8,8 +8,10 @@ return [
     'GOOGLE_MAPS_API_KEY' => 'AIzaSyCY24rP5kEv4iuBK6u7gtItI3Q3hWhjWBg',
     'GEMINI_API_KEY' => 'AQ.Ab8RN6La52XOBoRy2qwsu3xhvznMD7U9_NjqpoGHkNX85imt-w',
     'GEMINI_MODEL' => 'gemini-3.5-flash',
-    'APP_NAME' => 'Mueblería San Martín',
+    'APP_NAME' => 'Mueblería San Martínes',
     'BUSINESS_LOGO' => 'storage/assets/logo_6a2ae31211305.png',
     'THEME_SIDEBAR_BG' => '#242424',
     'THEME_PRIMARY' => '#4cdbe6',
+    'seo_titulo'=> ' hola'
+   
 ];
