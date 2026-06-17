@@ -29,7 +29,10 @@ class AjustesController extends Controller {
         if (!empty($_FILES['logo_file']['name']) && $_FILES['logo_file']['error'] === 0) {
             $ext = strtolower(pathinfo($_FILES['logo_file']['name'], PATHINFO_EXTENSION));
             if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'svg'])) {
-                $filename = uniqid('logo_') . '.' . $ext;
+                // Conservar el nombre original y limpiarlo de caracteres especiales
+                $nombre_base = pathinfo($_FILES['logo_file']['name'], PATHINFO_FILENAME);
+                $nombre_seguro = preg_replace('/[^a-zA-Z0-9_-]/', '_', $nombre_base);
+                $filename = $nombre_seguro . '.' . $ext;
                 if (move_uploaded_file($_FILES['logo_file']['tmp_name'], $storage_dir . '/' . $filename)) {
                     if (!empty($config['BUSINESS_LOGO']) && strpos($config['BUSINESS_LOGO'], 'storage/assets/') === 0) {
                         $old_path = BASE_PATH . '/' . $config['BUSINESS_LOGO'];
