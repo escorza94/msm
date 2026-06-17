@@ -13,14 +13,15 @@
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const socket = io('http://127.0.0.1:3000');
+        const nodeUrl = window.location.protocol + '//' + window.location.hostname + ':3000';
+        const socket = io(nodeUrl);
         
         const qrLoader = document.getElementById('qr-loader');
         const qrImg = document.getElementById('qr-img');
         const qrSuccess = document.getElementById('qr-success');
 
         // Comprobar estado inicial del Gateway al cargar la página
-        fetch('http://127.0.0.1:3000/api/status')
+        fetch(nodeUrl + '/api/status')
             .then(res => res.json())
             .then(data => {
                 if (data.isConnected) {

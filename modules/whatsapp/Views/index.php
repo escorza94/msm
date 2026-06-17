@@ -55,6 +55,7 @@
             statusBadge.className = isConnected ? "px-4 py-2 rounded-lg bg-green-50 text-green-600 font-medium text-sm flex items-center border border-green-200" : "px-4 py-2 rounded-lg bg-red-50 text-red-600 font-medium text-sm flex items-center border border-red-200";
             statusBadge.innerHTML = isConnected ? '<i class="fas fa-check-circle mr-2"></i> Conectado y Activo' : '<i class="fas fa-exclamation-triangle mr-2"></i> Desconectado de Node.js';
         };
-        fetch('http://127.0.0.1:3000/api/status').then(r => r.json()).then(d => updateStatus(d.isConnected)).catch(e => updateStatus(false));
+        const nodeUrl = window.location.protocol + '//' + window.location.hostname + ':3000';
+        fetch(nodeUrl + '/api/status').then(r => r.json()).then(d => updateStatus(d.isConnected)).catch(e => updateStatus(false));
     });
 </script>
