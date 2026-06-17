@@ -20,6 +20,7 @@ class StorefrontController extends Controller {
         // Cargar la API Key de Google Maps desde el config.php global
         $sysConfig = file_exists(BASE_PATH . '/config.php') ? require BASE_PATH . '/config.php' : [];
         $google_maps_api_key = $sysConfig['GOOGLE_MAPS_API_KEY'] ?? '';
+        $business_logo = $sysConfig['BUSINESS_LOGO'] ?? '';
 
         $data = [
             'titulo' => 'Mueblería San Martín',
@@ -27,6 +28,7 @@ class StorefrontController extends Controller {
             'config' => [],
             'sucursal_coords' => ['lat' => '0', 'lon' => '0'],
             'google_maps_api_key' => $google_maps_api_key,
+            'business_logo' => $business_logo,
             'secciones' => [],
             'menu_enlaces' => []
         ];

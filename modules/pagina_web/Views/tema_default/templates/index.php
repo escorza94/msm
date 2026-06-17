@@ -66,8 +66,16 @@
     <!-- 2. Header / Barra de Navegación -->
     <header class="bg-secciones shadow-sm sticky top-0 z-50">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="text-xl md:text-2xl font-bold text-primario">
-                <a href="<?= base_url() ?>"><?= htmlspecialchars($config['nombre_empresa'] ?? 'Mueblería San Martín') ?></a>
+            <div class="text-xl md:text-2xl font-bold text-primario flex items-center">
+                <a href="<?= base_url() ?>" class="flex items-center gap-3">
+                    <?php $logo_url = $business_logo ?? ''; ?>
+                    <?php if (!empty($logo_url)): ?>
+                        <img src="<?= (strpos($logo_url, 'http') === 0 ? '' : base_url()) . htmlspecialchars($logo_url) ?>" alt="Logo <?= htmlspecialchars($config['nombre_empresa'] ?? 'Negocio') ?>" class="h-10 md:h-12 max-w-[200px] object-contain">
+                        <span class="hidden lg:block text-lg"><?= htmlspecialchars($config['nombre_empresa'] ?? '') ?></span>
+                    <?php else: ?>
+                        <span><?= htmlspecialchars($config['nombre_empresa'] ?? 'Mueblería San Martín') ?></span>
+                    <?php endif; ?>
+                </a>
             </div>
             <nav class="hidden md:flex space-x-8">
                 <?php foreach($menu_enlaces as $link): ?>
@@ -183,6 +191,37 @@
                         </div>
                     </div>
                 </section>
+                
+            <?php elseif ($seccion['tipo'] === 'texto_libre'): ?>
+                <!-- WIDGET: Texto Libre (Editable) -->
+                <section id="texto-<?= $seccion['id'] ?>" class="py-16 bg-fondo">
+                    <div class="container mx-auto px-6 max-w-4xl text-gray-700">
+                        <?php if (!empty($seccion['config']['titulo_seccion'])): ?><h2 class="text-3xl font-bold text-center text-primario mb-6"><?= htmlspecialchars($seccion['config']['titulo_seccion']) ?></h2><?php endif; ?>
+                        <div class="prose max-w-none text-center md:text-left leading-relaxed">
+                            <?= nl2br(htmlspecialchars($seccion['config']['contenido'] ?? '')) ?>
+                        </div>
+                    </div>
+                </section>
+                
+            <?php elseif ($seccion['tipo'] === 'imagen_texto'): ?>
+                <!-- WIDGET: Imagen con Texto -->
+                <section id="imgtxt-<?= $seccion['id'] ?>" class="py-16 <?= ($seccion['config']['posicion_imagen'] ?? 'izquierda') === 'izquierda' ? 'bg-secciones' : 'bg-fondo' ?>">
+                    <div class="container mx-auto px-6">
+                        <div class="flex flex-col md:flex-row items-center gap-12 <?= ($seccion['config']['posicion_imagen'] ?? 'izquierda') === 'derecha' ? 'md:flex-row-reverse' : '' ?>">
+                            <div class="w-full md:w-1/2">
+                                <?php if(!empty($seccion['config']['imagen'])): ?>
+                                    <img src="<?= base_url($seccion['config']['imagen']) ?>" alt="<?= htmlspecialchars($seccion['config']['titulo_seccion'] ?? 'Imagen') ?>" class="rounded-2xl shadow-lg w-full object-cover max-h-[500px]">
+                                <?php endif; ?>
+                            </div>
+                            <div class="w-full md:w-1/2 space-y-6">
+                                <?php if (!empty($seccion['config']['titulo_seccion'])): ?><h2 class="text-3xl font-bold text-primario"><?= htmlspecialchars($seccion['config']['titulo_seccion']) ?></h2><?php endif; ?>
+                                <div class="prose max-w-none text-gray-700 leading-relaxed">
+                                    <?= nl2br(htmlspecialchars($seccion['config']['contenido'] ?? '')) ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
                 <?php endif; ?>
             <?php endif; ?>
 
@@ -203,8 +242,13 @@
     <!-- 6. Footer -->
         <footer id="contacto" class="bg-secundario text-white py-12">
         <div class="container mx-auto px-6 text-center">
-            <h3 class="text-2xl font-bold mb-4"><?= htmlspecialchars($config['nombre_empresa'] ?? 'Mueblería San Martín') ?></h3>
-            <p class="mb-8 text-gray-300 max-w-lg mx-auto"><?= htmlspecialchars($config['footer_texto'] ?? 'Calidad y confianza para amueblar tu vida. Contáctanos para cualquier duda o cotización.') ?></p>
+            <?php $logo_url = $business_logo ?? ''; ?>
+            <?php if (!empty($logo_url)): ?>
+                <img src="<?= (strpos($logo_url, 'http') === 0 ? '' : base_url()) . htmlspecialchars($logo_url) ?>" alt="Logo <?= htmlspecialchars($config['nombre_empresa'] ?? 'Negocio') ?>" class="h-16 mx-auto mb-6 object-contain filter brightness-0 invert opacity-90 hover:opacity-100 transition">
+            <?php else: ?>
+                <h3 class="text-2xl font-bold mb-4"><?= htmlspecialchars($config['nombre_empresa'] ?? 'Mueblería San Martín') ?></h3>
+            <?php endif; ?>
+            <p class="mb-8 text-gray-300 max-w-lg mx-auto leading-relaxed"><?= nl2br(htmlspecialchars($config['footer_texto'] ?? 'Calidad y confianza para amueblar tu vida. Contáctanos para cualquier duda o cotización.')) ?></p>
             <div class="flex justify-center space-x-6 mb-8">
                 <?php if(!empty($config['facebook_url'])): ?>
                     <a href="<?= htmlspecialchars($config['facebook_url']) ?>" target="_blank" class="text-gray-300 text-2xl hover:text-white transition"><i class="fab fa-facebook"></i></a>

@@ -123,6 +123,30 @@ class ConstructorController extends Controller {
             }
             $config['tarjetas'] = $tarjetas;
         }
+        elseif ($tipo === 'texto_libre') {
+            $config['titulo_seccion'] = sanitize($_POST['titulo_seccion'] ?? '');
+            $config['contenido'] = sanitize($_POST['contenido'] ?? '');
+        }
+        elseif ($tipo === 'imagen_texto') {
+            $config['titulo_seccion'] = sanitize($_POST['titulo_seccion'] ?? '');
+            $config['contenido'] = sanitize($_POST['contenido'] ?? '');
+            $config['posicion_imagen'] = sanitize($_POST['posicion_imagen'] ?? 'izquierda');
+            
+            $img_path = $_POST['imagen_existente'] ?? '';
+            if (isset($_FILES['imagen']['name']) && !empty($_FILES['imagen']['name'])) {
+                $file_tmp = $_FILES['imagen']['tmp_name'];
+                $ext = strtolower(pathinfo($_FILES['imagen']['name'], PATHINFO_EXTENSION));
+                if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
+                    $upload_dir = BASE_PATH . '/storage/landing/';
+                    if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
+                    $new_name = uniqid('img_') . '.' . $ext;
+                    if (move_uploaded_file($file_tmp, $upload_dir . $new_name)) {
+                        $img_path = 'storage/landing/' . $new_name;
+                    }
+                }
+            }
+            $config['imagen'] = $img_path;
+        }
 
         $json_config = json_encode($config, JSON_UNESCAPED_UNICODE);
 
