@@ -65,15 +65,15 @@
 
     <!-- 2. Header / Barra de Navegación -->
     <header class="bg-secciones shadow-sm sticky top-0 z-50">
-        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+        <div class="container mx-auto px-4 md:px-6 py-3 md:py-4 flex justify-between items-center">
             <div class="text-xl md:text-2xl font-bold text-primario flex items-center">
-                <a href="<?= base_url() ?>" class="flex items-center gap-3">
+                <a href="<?= base_url() ?>" class="flex items-center gap-2 md:gap-3">
                     <?php $logo_url = $business_logo ?? ''; ?>
                     <?php if (!empty($logo_url)): ?>
-                        <img src="<?= (strpos($logo_url, 'http') === 0 ? '' : base_url()) . htmlspecialchars($logo_url) ?>" alt="Logo <?= htmlspecialchars($config['nombre_empresa'] ?? 'Negocio') ?>" class="h-10 md:h-12 max-w-[200px] object-contain">
+                        <img src="<?= (strpos($logo_url, 'http') === 0 ? '' : base_url()) . htmlspecialchars($logo_url) ?>" alt="Logo <?= htmlspecialchars($config['nombre_empresa'] ?? 'Negocio') ?>" class="h-8 md:h-12 max-w-[150px] md:max-w-[200px] object-contain">
                         <span class="hidden lg:block text-lg"><?= htmlspecialchars($config['nombre_empresa'] ?? '') ?></span>
                     <?php else: ?>
-                        <span><?= htmlspecialchars($config['nombre_empresa'] ?? 'Mueblería San Martín') ?></span>
+                        <span class="truncate max-w-[200px] md:max-w-none"><?= htmlspecialchars($config['nombre_empresa'] ?? 'Mueblería San Martín') ?></span>
                     <?php endif; ?>
                 </a>
             </div>
@@ -82,13 +82,31 @@
                     <a href="<?= htmlspecialchars($link['enlace']) ?>" class="text-gray-600 hover:text-primario transition font-medium"><?= htmlspecialchars($link['titulo']) ?></a>
                 <?php endforeach; ?>
             </nav>
-            <div class="flex items-center">
-                <a href="https://wa.me/<?= htmlspecialchars($config['whatsapp_numero'] ?? '') ?>?text=Hola,%20vengo%20de%20la%20página%20web" target="_blank" class="bg-green-500 text-white px-5 py-2 rounded-full hover:bg-green-600 transition flex items-center shadow-sm font-bold text-sm">
+            <div class="flex items-center gap-3">
+                <a href="https://wa.me/<?= htmlspecialchars($config['whatsapp_numero'] ?? '') ?>?text=Hola,%20vengo%20de%20la%20página%20web" target="_blank" class="hidden md:flex bg-green-500 text-white px-5 py-2 rounded-full hover:bg-green-600 transition items-center shadow-sm font-bold text-sm">
                     <i class="fab fa-whatsapp mr-2"></i> Contactar
                 </a>
+                <button id="mobile-menu-btn" class="md:hidden text-gray-600 hover:text-primario focus:outline-none text-2xl p-2">
+                    <i class="fas fa-bars"></i>
+                </button>
             </div>
         </div>
     </header>
+    
+    <!-- Menú Móvil Deslizable -->
+    <div id="mobile-menu" class="fixed inset-0 z-[60] bg-black/50 hidden opacity-0 transition-opacity duration-300">
+        <div class="absolute right-0 top-0 bottom-0 w-64 bg-secciones shadow-xl transform translate-x-full transition-transform duration-300 flex flex-col" id="mobile-menu-content">
+            <div class="p-4 flex justify-end border-b border-gray-100">
+                <button id="close-menu-btn" class="text-gray-500 hover:text-red-500 text-2xl p-2"><i class="fas fa-times"></i></button>
+            </div>
+            <nav class="flex flex-col p-6 space-y-4 overflow-y-auto flex-1">
+                <?php foreach($menu_enlaces as $link): ?>
+                    <a href="<?= htmlspecialchars($link['enlace']) ?>" class="text-gray-700 hover:text-primario font-bold text-lg border-b border-gray-50 pb-3 mobile-link"><?= htmlspecialchars($link['titulo']) ?></a>
+                <?php endforeach; ?>
+                <a href="https://wa.me/<?= htmlspecialchars($config['whatsapp_numero'] ?? '') ?>?text=Hola,%20vengo%20de%20la%20página%20web" target="_blank" class="bg-green-500 text-white px-5 py-3 rounded-xl text-center shadow-sm font-bold mt-6 flex justify-center items-center"><i class="fab fa-whatsapp mr-2 text-xl"></i> Hablar por WhatsApp</a>
+            </nav>
+        </div>
+    </div>
 
     <main>
         <!-- SECCIONES DINÁMICAS (Layout Builder CMS) -->
@@ -128,11 +146,11 @@
             <?php elseif ($seccion['tipo'] === 'grid_productos'): ?>
                 <!-- WIDGET: Grid de Productos -->
                 <?php $productos = $seccion['productos'] ?? []; ?>
-                <section id="productos-<?= $seccion['id'] ?>" class="py-16 bg-secciones">
-                    <div class="container mx-auto px-6">
-                        <h2 class="text-3xl font-bold text-center text-primario mb-2"><?= htmlspecialchars($seccion['config']['titulo_seccion'] ?? 'Catálogo') ?></h2>
+                <section id="productos-<?= $seccion['id'] ?>" class="py-10 md:py-16 bg-secciones">
+                    <div class="container mx-auto px-4 md:px-6">
+                        <h2 class="text-2xl md:text-3xl font-bold text-center text-primario mb-2"><?= htmlspecialchars($seccion['config']['titulo_seccion'] ?? 'Catálogo') ?></h2>
                         <?php if (!empty($seccion['config']['subtitulo'])): ?>
-                            <p class="text-center text-gray-500 mb-10"><?= htmlspecialchars($seccion['config']['subtitulo']) ?></p>
+                            <p class="text-center text-gray-500 mb-8 md:mb-10 text-sm md:text-base"><?= htmlspecialchars($seccion['config']['subtitulo']) ?></p>
                         <?php endif; ?>
 
                         <?php if (!empty($seccion['error'])): ?>
@@ -148,7 +166,7 @@
                                 <p class="text-xs mt-2 text-gray-400">Asegúrate de que los productos estén activos y su stock sea mayor a 0.</p>
                             </div>
                         <?php else: ?>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
                             <?php foreach($productos as $producto): ?>
                             <div class="bg-secciones rounded-lg shadow-md overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 group">
                                 <a href="https://wa.me/<?= htmlspecialchars($config['whatsapp_numero'] ?? '') ?>?text=Hola,%20me%20interesa%20el%20producto:%20<?= urlencode($producto['nombre']) ?>" target="_blank" class="block">
@@ -174,11 +192,11 @@
                 <!-- WIDGET: Tarjetas de Información -->
                 <?php $tarjetas = $seccion['config']['tarjetas'] ?? []; ?>
                 <?php if (!empty($tarjetas)): ?>
-                <section id="tarjetas-<?= $seccion['id'] ?>" class="py-16 bg-fondo">
-                    <div class="container mx-auto px-6">
-                        <?php if (!empty($seccion['config']['titulo_seccion'])): ?><h2 class="text-3xl font-bold text-center text-primario mb-2"><?= htmlspecialchars($seccion['config']['titulo_seccion']) ?></h2><?php endif; ?>
-                        <?php if (!empty($seccion['config']['subtitulo'])): ?><p class="text-center text-gray-500 mb-10"><?= htmlspecialchars($seccion['config']['subtitulo']) ?></p><?php endif; ?>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <section id="tarjetas-<?= $seccion['id'] ?>" class="py-10 md:py-16 bg-fondo">
+                    <div class="container mx-auto px-4 md:px-6">
+                        <?php if (!empty($seccion['config']['titulo_seccion'])): ?><h2 class="text-2xl md:text-3xl font-bold text-center text-primario mb-2"><?= htmlspecialchars($seccion['config']['titulo_seccion']) ?></h2><?php endif; ?>
+                        <?php if (!empty($seccion['config']['subtitulo'])): ?><p class="text-center text-gray-500 mb-8 md:mb-10 text-sm md:text-base"><?= htmlspecialchars($seccion['config']['subtitulo']) ?></p><?php endif; ?>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
                             <?php foreach($tarjetas as $tarjeta): ?>
                             <div class="bg-secciones p-8 rounded-xl shadow-sm border border-gray-100 text-center hover:-translate-y-2 transition-transform duration-300">
                                 <div class="w-16 h-16 mx-auto bg-primario-light rounded-full flex items-center justify-center text-2xl mb-4">
@@ -194,9 +212,9 @@
                 
             <?php elseif ($seccion['tipo'] === 'texto_libre'): ?>
                 <!-- WIDGET: Texto Libre (Editable) -->
-                <section id="texto-<?= $seccion['id'] ?>" class="py-16 bg-fondo">
-                    <div class="container mx-auto px-6 max-w-4xl text-gray-700">
-                        <?php if (!empty($seccion['config']['titulo_seccion'])): ?><h2 class="text-3xl font-bold text-center text-primario mb-6"><?= htmlspecialchars($seccion['config']['titulo_seccion']) ?></h2><?php endif; ?>
+                <section id="texto-<?= $seccion['id'] ?>" class="py-10 md:py-16 bg-fondo">
+                    <div class="container mx-auto px-4 md:px-6 max-w-4xl text-gray-700">
+                        <?php if (!empty($seccion['config']['titulo_seccion'])): ?><h2 class="text-2xl md:text-3xl font-bold text-center text-primario mb-6"><?= htmlspecialchars($seccion['config']['titulo_seccion']) ?></h2><?php endif; ?>
                         <div class="prose max-w-none text-center md:text-left leading-relaxed">
                             <?= nl2br(htmlspecialchars($seccion['config']['contenido'] ?? '')) ?>
                         </div>
@@ -205,16 +223,16 @@
                 
             <?php elseif ($seccion['tipo'] === 'imagen_texto'): ?>
                 <!-- WIDGET: Imagen con Texto -->
-                <section id="imgtxt-<?= $seccion['id'] ?>" class="py-16 <?= ($seccion['config']['posicion_imagen'] ?? 'izquierda') === 'izquierda' ? 'bg-secciones' : 'bg-fondo' ?>">
-                    <div class="container mx-auto px-6">
-                        <div class="flex flex-col md:flex-row items-center gap-12 <?= ($seccion['config']['posicion_imagen'] ?? 'izquierda') === 'derecha' ? 'md:flex-row-reverse' : '' ?>">
+                <section id="imgtxt-<?= $seccion['id'] ?>" class="py-10 md:py-16 <?= ($seccion['config']['posicion_imagen'] ?? 'izquierda') === 'izquierda' ? 'bg-secciones' : 'bg-fondo' ?>">
+                    <div class="container mx-auto px-4 md:px-6">
+                        <div class="flex flex-col md:flex-row items-center gap-8 md:gap-12 <?= ($seccion['config']['posicion_imagen'] ?? 'izquierda') === 'derecha' ? 'md:flex-row-reverse' : '' ?>">
                             <div class="w-full md:w-1/2">
                                 <?php if(!empty($seccion['config']['imagen'])): ?>
                                     <img src="<?= base_url($seccion['config']['imagen']) ?>" alt="<?= htmlspecialchars($seccion['config']['titulo_seccion'] ?? 'Imagen') ?>" class="rounded-2xl shadow-lg w-full object-cover max-h-[500px]">
                                 <?php endif; ?>
                             </div>
                             <div class="w-full md:w-1/2 space-y-6">
-                                <?php if (!empty($seccion['config']['titulo_seccion'])): ?><h2 class="text-3xl font-bold text-primario"><?= htmlspecialchars($seccion['config']['titulo_seccion']) ?></h2><?php endif; ?>
+                                <?php if (!empty($seccion['config']['titulo_seccion'])): ?><h2 class="text-2xl md:text-3xl font-bold text-primario text-center md:text-left"><?= htmlspecialchars($seccion['config']['titulo_seccion']) ?></h2><?php endif; ?>
                                 <div class="prose max-w-none text-gray-700 leading-relaxed">
                                     <?= nl2br(htmlspecialchars($seccion['config']['contenido'] ?? '')) ?>
                                 </div>
@@ -228,11 +246,11 @@
         <?php endforeach; ?>
 
         <!-- 5. Ubicación (Mapa) -->
-        <section id="ubicacion" class="py-16 bg-fondo">
-            <div class="container mx-auto px-6">
-                <h2 class="text-3xl font-bold text-center text-primario mb-2">Visítanos</h2>
-                <p class="text-center text-gray-500 mb-10">Encuéntranos en el corazón de la ciudad.</p>
-                <div class="w-full h-96 bg-gray-300 rounded-lg shadow-md overflow-hidden border border-gray-200" id="mapa-sucursal">
+        <section id="ubicacion" class="py-10 md:py-16 bg-fondo">
+            <div class="container mx-auto px-4 md:px-6">
+                <h2 class="text-2xl md:text-3xl font-bold text-center text-primario mb-2">Visítanos</h2>
+                <p class="text-center text-gray-500 mb-8 md:mb-10 text-sm md:text-base">Encuéntranos en el corazón de la ciudad.</p>
+                <div class="w-full h-64 md:h-96 bg-gray-300 rounded-lg shadow-md overflow-hidden border border-gray-200" id="mapa-sucursal">
                     <!-- El mapa se inyectará aquí -->
                 </div>
             </div>
@@ -240,8 +258,8 @@
     </main>
 
     <!-- 6. Footer -->
-        <footer id="contacto" class="bg-secundario text-white py-12">
-        <div class="container mx-auto px-6 text-center">
+        <footer id="contacto" class="bg-secundario text-white py-10 md:py-12">
+        <div class="container mx-auto px-4 md:px-6 text-center">
             <?php $logo_url = $business_logo ?? ''; ?>
             <?php if (!empty($logo_url)): ?>
                 <img src="<?= (strpos($logo_url, 'http') === 0 ? '' : base_url()) . htmlspecialchars($logo_url) ?>" alt="Logo <?= htmlspecialchars($config['nombre_empresa'] ?? 'Negocio') ?>" class="h-16 mx-auto mb-6 object-contain filter brightness-0 invert opacity-90 hover:opacity-100 transition">
@@ -266,13 +284,42 @@
 
     <!-- Botón Flotante de WhatsApp -->
     <?php if(!empty($config['whatsapp_numero'])): ?>
-    <a href="https://wa.me/<?= htmlspecialchars($config['whatsapp_numero']) ?>?text=Hola,%20necesito%20ayuda" target="_blank" class="fixed bottom-6 right-6 w-16 h-16 bg-green-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-green-600 transition transform hover:scale-110 z-40">
-        <i class="fab fa-whatsapp text-4xl"></i>
+    <a href="https://wa.me/<?= htmlspecialchars($config['whatsapp_numero']) ?>?text=Hola,%20necesito%20ayuda" target="_blank" class="fixed bottom-4 right-4 md:bottom-6 md:right-6 w-14 h-14 md:w-16 md:h-16 bg-green-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-green-600 transition transform hover:scale-110 z-40">
+        <i class="fab fa-whatsapp text-3xl md:text-4xl"></i>
     </a>
     <?php endif; ?>
 
     <!-- Scripts JS -->
     
+    <!-- Script para Menú Móvil -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnOpen = document.getElementById('mobile-menu-btn');
+            const btnClose = document.getElementById('close-menu-btn');
+            const menu = document.getElementById('mobile-menu');
+            const menuContent = document.getElementById('mobile-menu-content');
+            const links = document.querySelectorAll('.mobile-link');
+
+            function openMenu() {
+                menu.classList.remove('hidden');
+                setTimeout(() => {
+                    menu.classList.remove('opacity-0');
+                    menuContent.classList.remove('translate-x-full');
+                }, 10);
+            }
+
+            function closeMenu() {
+                menu.classList.add('opacity-0');
+                menuContent.classList.add('translate-x-full');
+                setTimeout(() => { menu.classList.add('hidden'); }, 300);
+            }
+
+            if(btnOpen) btnOpen.addEventListener('click', openMenu);
+            if(btnClose) btnClose.addEventListener('click', closeMenu);
+            links.forEach(l => l.addEventListener('click', closeMenu));
+        });
+    </script>
+
     <!-- Script para el Mapa de Google -->
     <script>
         function initMap() {
