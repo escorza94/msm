@@ -1,6 +1,7 @@
 Options -Indexes
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    RewriteRule ^storage/ - [L,NC]
     RewriteRule ^phpmyadmin$ - [L,NC]
 RewriteCond %{REQUEST_URI} ^/phpmyadmin [NC]
 RewriteRule .* - [L]

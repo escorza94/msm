@@ -38,10 +38,28 @@ class RolesController extends Controller {
         $permisos = [];
         $role_permissions = [];
         try {
-            $permisos = $db->query("SELECT * FROM permissions ORDER BY name ASC")->fetchAll();
+            $permisos_raw = $db->query("SELECT * FROM permissions ORDER BY name ASC")->fetchAll();
+            
+            // 1. Limpiar duplicados por si la BD no tiene restricción UNIQUE
+            $permisos_unicos = [];
+            foreach ($permisos_raw as $p) {
+                if (!isset($permisos_unicos[$p['name']])) {
+                    $permisos_unicos[$p['name']] = $p;
+                }
+            }
+            $permisos = array_values($permisos_unicos);
+
             $stmtRp = $db->prepare("SELECT permission_id FROM role_permissions WHERE role_id = ?");
             $stmtRp->execute([$id]);
-            $role_permissions = $stmtRp->fetchAll(PDO::FETCH_COLUMN);
+            $role_permissions_raw = $stmtRp->fetchAll(PDO::FETCH_COLUMN);
+            
+            // 2. Asegurar que si el rol tenía un ID duplicado, se marque correctamente en la vista
+            foreach ($permisos_raw as $p) {
+                if (in_array($p['id'], $role_permissions_raw)) {
+                    $role_permissions[] = $permisos_unicos[$p['name']]['id'];
+                }
+            }
+            $role_permissions = array_unique($role_permissions);
         } catch (\PDOException $e) {}
 
         // Agrupar permisos por prefijo (ej: "pos.ver" -> "Pos")
@@ -85,10 +103,17 @@ class RolesController extends Controller {
 
         $db = Database::getInstance();
         try {
+            // Verificar si ya existe para evitar duplicados manualmente
+            $stmtCheck = $db->prepare("SELECT id FROM permissions WHERE name = ?");
+            $stmtCheck->execute([$name]);
+            if ($stmtCheck->fetch()) {
+                redirect(base_url('usuarios/roles?error=El permiso ya existe.'));
+            }
+            
             $db->prepare("INSERT INTO permissions (name, description) VALUES (?, ?)")->execute([$name, $description]);
             redirect(base_url('usuarios/roles?success=Permiso creado correctamente.'));
         } catch (\PDOException $e) {
-            redirect(base_url('usuarios/roles?error=Error al crear el permiso. Es posible que ya exista.'));
+            redirect(base_url('usuarios/roles?error=Error al crear el permiso.'));
         }
     }
 
@@ -143,7 +168,16 @@ class RolesController extends Controller {
                         if (isset($config['permissions']) && is_array($config['permissions'])) {
                             foreach ($config['permissions'] as $p) {
                                 $name = sanitize($p['name'] ?? ''); $desc = sanitize($p['description'] ?? '');
-                                if ($name) { try { $stmt = $db->prepare("INSERT IGNORE INTO permissions (name, description) VALUES (?, ?)"); $stmt->execute([$name, $desc]); if ($stmt->rowCount() > 0) $nuevos++; } catch (\Exception $e) {} }
+                                if ($name) { 
+                                    try { 
+                                        $stmtCheck = $db->prepare("SELECT id FROM permissions WHERE name = ?");
+                                        $stmtCheck->execute([$name]);
+                                        if (!$stmtCheck->fetch()) {
+                                            $db->prepare("INSERT INTO permissions (name, description) VALUES (?, ?)")->execute([$name, $desc]); 
+                                            $nuevos++; 
+                                        }
+                                    } catch (\Exception $e) {} 
+                                }
                             }
                         }
                     }

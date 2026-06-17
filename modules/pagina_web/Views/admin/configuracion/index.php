@@ -23,14 +23,26 @@
         <!-- Identidad y Diseño -->
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <h3 class="font-bold text-gray-800 mb-4 border-b border-gray-100 pb-2"><i class="fas fa-palette text-indigo-500 mr-2"></i> Identidad y Diseño</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="md:col-span-4">
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Nombre de la Empresa</label>
                     <input type="text" name="nombre_empresa" value="<?= htmlspecialchars($config['nombre_empresa'] ?? 'Mueblería San Martín') ?>" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-indigo-500 outline-none" placeholder="Ej. Mueblería San Martín">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Color Primario (Tema)</label>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1" title="Botones, enlaces y resaltados">Color Primario</label>
                     <input type="color" name="color_primario" value="<?= htmlspecialchars($config['color_primario'] ?? '#4f46e5') ?>" class="h-10 w-full border border-gray-300 rounded-lg px-2 py-1 cursor-pointer">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1" title="Pie de página y acentos">Color Secundario</label>
+                    <input type="color" name="color_secundario" value="<?= htmlspecialchars($config['color_secundario'] ?? '#1f2937') ?>" class="h-10 w-full border border-gray-300 rounded-lg px-2 py-1 cursor-pointer">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1" title="Fondo general de la página web">Fondo Principal</label>
+                    <input type="color" name="color_fondo" value="<?= htmlspecialchars($config['color_fondo'] ?? '#f3f4f6') ?>" class="h-10 w-full border border-gray-300 rounded-lg px-2 py-1 cursor-pointer">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1" title="Fondo de la barra de navegación y tarjetas">Fondo Secciones</label>
+                    <input type="color" name="color_secciones" value="<?= htmlspecialchars($config['color_secciones'] ?? '#ffffff') ?>" class="h-10 w-full border border-gray-300 rounded-lg px-2 py-1 cursor-pointer">
                 </div>
             </div>
         </div>

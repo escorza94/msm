@@ -17,6 +17,9 @@
     <style>
         :root {
             --color-primario: <?= htmlspecialchars($config['color_primario'] ?? '#4f46e5') ?>;
+            --color-secundario: <?= htmlspecialchars($config['color_secundario'] ?? '#1f2937') ?>;
+            --color-fondo: <?= htmlspecialchars($config['color_fondo'] ?? '#f3f4f6') ?>;
+            --color-secciones: <?= htmlspecialchars($config['color_secciones'] ?? '#ffffff') ?>;
         }
         .bg-primario { background-color: var(--color-primario); }
         .text-primario { color: var(--color-primario); }
@@ -24,6 +27,10 @@
         .hover\:bg-primario-dark:hover { filter: brightness(0.9); background-color: var(--color-primario); }
         .hover\:text-primario:hover { color: var(--color-primario); }
         .bg-primario-light { background-color: color-mix(in srgb, var(--color-primario) 15%, transparent); color: var(--color-primario); }
+
+        .bg-secundario { background-color: var(--color-secundario); }
+        .bg-fondo { background-color: var(--color-fondo); }
+        .bg-secciones { background-color: var(--color-secciones); }
 
         /* Estilos personalizados para el carrusel */
         .swiper-button-next, .swiper-button-prev {
@@ -46,7 +53,7 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 font-sans antialiased">
+<body class="bg-fondo font-sans antialiased">
 
     <!-- 1. Cintillo de Promociones (si existe) -->
     <?php if (!empty($promocion_activa)): ?>
@@ -57,9 +64,9 @@
     <?php endif; ?>
 
     <!-- 2. Header / Barra de Navegación -->
-    <header class="bg-white shadow-sm sticky top-0 z-50">
+    <header class="bg-secciones shadow-sm sticky top-0 z-50">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="text-xl md:text-2xl font-bold text-gray-800">
+            <div class="text-xl md:text-2xl font-bold text-primario">
                 <a href="<?= base_url() ?>"><?= htmlspecialchars($config['nombre_empresa'] ?? 'Mueblería San Martín') ?></a>
             </div>
             <nav class="hidden md:flex space-x-8">
@@ -113,16 +120,29 @@
             <?php elseif ($seccion['tipo'] === 'grid_productos'): ?>
                 <!-- WIDGET: Grid de Productos -->
                 <?php $productos = $seccion['productos'] ?? []; ?>
-                <?php if (!empty($productos)): ?>
-                <section id="productos-<?= $seccion['id'] ?>" class="py-16 bg-white">
+                <section id="productos-<?= $seccion['id'] ?>" class="py-16 bg-secciones">
                     <div class="container mx-auto px-6">
-                        <h2 class="text-3xl font-bold text-center text-gray-800 mb-2"><?= htmlspecialchars($seccion['config']['titulo_seccion'] ?? 'Catálogo') ?></h2>
+                        <h2 class="text-3xl font-bold text-center text-primario mb-2"><?= htmlspecialchars($seccion['config']['titulo_seccion'] ?? 'Catálogo') ?></h2>
                         <?php if (!empty($seccion['config']['subtitulo'])): ?>
                             <p class="text-center text-gray-500 mb-10"><?= htmlspecialchars($seccion['config']['subtitulo']) ?></p>
                         <?php endif; ?>
+
+                        <?php if (!empty($seccion['error'])): ?>
+                            <div class="text-left text-red-700 bg-red-50 p-6 rounded-xl border border-red-200 max-w-4xl mx-auto shadow-sm">
+                                <h3 class="font-bold text-lg"><i class="fas fa-exclamation-triangle mr-2"></i> Error de Base de Datos en esta sección</h3>
+                                <p class="text-sm mt-1 mb-3">La consulta para obtener los productos de la colección falló. Revisa el mensaje de error para diagnosticar el problema:</p>
+                                <pre class="mt-2 text-xs bg-red-100 p-3 rounded font-mono overflow-x-auto text-red-800"><?= htmlspecialchars($seccion['error']) ?></pre>
+                            </div>
+                        <?php elseif (empty($productos)): ?>
+                            <div class="text-center text-gray-500 bg-gray-50 p-8 rounded-xl border border-gray-100 max-w-2xl mx-auto">
+                                <i class="fas fa-box-open text-4xl mb-3 opacity-30"></i>
+                                <p class="font-medium text-gray-600">No hay productos disponibles en esta colección por el momento.</p>
+                                <p class="text-xs mt-2 text-gray-400">Asegúrate de que los productos estén activos y su stock sea mayor a 0.</p>
+                            </div>
+                        <?php else: ?>
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                             <?php foreach($productos as $producto): ?>
-                            <div class="bg-white rounded-lg shadow-md overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 group">
+                            <div class="bg-secciones rounded-lg shadow-md overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 group">
                                 <a href="https://wa.me/<?= htmlspecialchars($config['whatsapp_numero'] ?? '') ?>?text=Hola,%20me%20interesa%20el%20producto:%20<?= urlencode($producto['nombre']) ?>" target="_blank" class="block">
                                     <div class="h-56 bg-gray-200 overflow-hidden relative">
                                         <img src="<?= base_url(htmlspecialchars($producto['imagen'] ?? 'storage/placeholder.jpg')) ?>" alt="<?= htmlspecialchars($producto['nombre']) ?>" class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300">
@@ -130,7 +150,7 @@
                                     <div class="p-5">
                                         <h3 class="font-bold text-gray-800 truncate mb-2"><?= htmlspecialchars($producto['nombre']) ?></h3>
                                         <p class="text-primario font-black text-xl">$<?= number_format($producto['precio'], 2) ?></p>
-                                        <div class="mt-4 w-full bg-gray-800 text-white py-2.5 rounded-lg text-center block hover:bg-gray-900 transition font-bold text-sm">
+                                            <div class="mt-4 w-full bg-primario text-white py-2.5 rounded-lg text-center block hover:bg-primario-dark transition font-bold text-sm">
                                             Ver en WhatsApp
                                         </div>
                                     </div>
@@ -138,21 +158,21 @@
                             </div>
                             <?php endforeach; ?>
                         </div>
+                        <?php endif; ?>
                     </div>
                 </section>
-                <?php endif; ?>
 
             <?php elseif ($seccion['tipo'] === 'tarjetas_info'): ?>
                 <!-- WIDGET: Tarjetas de Información -->
                 <?php $tarjetas = $seccion['config']['tarjetas'] ?? []; ?>
                 <?php if (!empty($tarjetas)): ?>
-                <section id="tarjetas-<?= $seccion['id'] ?>" class="py-16 bg-gray-50">
+                <section id="tarjetas-<?= $seccion['id'] ?>" class="py-16 bg-fondo">
                     <div class="container mx-auto px-6">
-                        <?php if (!empty($seccion['config']['titulo_seccion'])): ?><h2 class="text-3xl font-bold text-center text-gray-800 mb-2"><?= htmlspecialchars($seccion['config']['titulo_seccion']) ?></h2><?php endif; ?>
+                        <?php if (!empty($seccion['config']['titulo_seccion'])): ?><h2 class="text-3xl font-bold text-center text-primario mb-2"><?= htmlspecialchars($seccion['config']['titulo_seccion']) ?></h2><?php endif; ?>
                         <?php if (!empty($seccion['config']['subtitulo'])): ?><p class="text-center text-gray-500 mb-10"><?= htmlspecialchars($seccion['config']['subtitulo']) ?></p><?php endif; ?>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                             <?php foreach($tarjetas as $tarjeta): ?>
-                            <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 text-center hover:-translate-y-2 transition-transform duration-300">
+                            <div class="bg-secciones p-8 rounded-xl shadow-sm border border-gray-100 text-center hover:-translate-y-2 transition-transform duration-300">
                                 <div class="w-16 h-16 mx-auto bg-primario-light rounded-full flex items-center justify-center text-2xl mb-4">
                                     <i class="<?= htmlspecialchars($tarjeta['icono'] ?? 'fas fa-star') ?>"></i>
                                 </div>
@@ -169,9 +189,9 @@
         <?php endforeach; ?>
 
         <!-- 5. Ubicación (Mapa) -->
-        <section id="ubicacion" class="py-16 bg-gray-50">
+        <section id="ubicacion" class="py-16 bg-fondo">
             <div class="container mx-auto px-6">
-                <h2 class="text-3xl font-bold text-center text-gray-800 mb-2">Visítanos</h2>
+                <h2 class="text-3xl font-bold text-center text-primario mb-2">Visítanos</h2>
                 <p class="text-center text-gray-500 mb-10">Encuéntranos en el corazón de la ciudad.</p>
                 <div class="w-full h-96 bg-gray-300 rounded-lg shadow-md overflow-hidden border border-gray-200" id="mapa-sucursal">
                     <!-- El mapa se inyectará aquí -->
@@ -181,7 +201,7 @@
     </main>
 
     <!-- 6. Footer -->
-    <footer id="contacto" class="bg-gray-800 text-white py-12">
+        <footer id="contacto" class="bg-secundario text-white py-12">
         <div class="container mx-auto px-6 text-center">
             <h3 class="text-2xl font-bold mb-4"><?= htmlspecialchars($config['nombre_empresa'] ?? 'Mueblería San Martín') ?></h3>
             <p class="mb-8 text-gray-300 max-w-lg mx-auto"><?= htmlspecialchars($config['footer_texto'] ?? 'Calidad y confianza para amueblar tu vida. Contáctanos para cualquier duda o cotización.') ?></p>

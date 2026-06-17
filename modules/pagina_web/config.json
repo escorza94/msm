@@ -1,5 +1,8 @@
 {
     "name": "pagina_web",
     "version": "1.0.0",
-    "active": true
+    "active": true,
+    "description": "",
+    "icon": "fa-store",
+    "permissions": []
 }

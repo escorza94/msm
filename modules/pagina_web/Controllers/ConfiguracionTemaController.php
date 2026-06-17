@@ -6,13 +6,19 @@ class ConfiguracionTemaController extends Controller {
         require_permission('pagina_web.ver');
         
         $db = Database::getInstance();
-        $config_rows = $db->query("SELECT clave, valor FROM tienda_tema_config")->fetchAll();
         $config = [];
-        foreach ($config_rows as $row) {
-            $config[$row['clave']] = $row['valor'];
+        $paginas = [];
+
+        try {
+            $config_rows = $db->query("SELECT clave, valor FROM tienda_tema_config")->fetchAll();
+            foreach ($config_rows as $row) {
+                $config[$row['clave']] = $row['valor'];
+            }
+            
+            $paginas = $db->query("SELECT titulo, slug FROM tienda_paginas WHERE estado = 'publicado'")->fetchAll();
+        } catch (\PDOException $e) {
+            // Previene que el panel falle si las tablas no existen
         }
-        
-        $paginas = $db->query("SELECT titulo, slug FROM tienda_paginas WHERE estado = 'publicado'")->fetchAll();
 
         $this->render('pagina_web', 'admin/configuracion/index', [
             'titulo' => 'Configuración del Tema y SEO',
@@ -26,7 +32,7 @@ class ConfiguracionTemaController extends Controller {
         require_permission('pagina_web.crear');
         
         $db = Database::getInstance();
-        $campos = ['nombre_empresa', 'color_primario', 'seo_titulo', 'seo_descripcion', 'whatsapp_numero', 'facebook_url', 'instagram_url', 'tiktok_url', 'footer_texto'];
+        $campos = ['nombre_empresa', 'color_primario', 'color_secundario', 'color_fondo', 'color_secciones', 'seo_titulo', 'seo_descripcion', 'whatsapp_numero', 'facebook_url', 'instagram_url', 'tiktok_url', 'footer_texto'];
         
         // Procesar Enlaces del Menú
         $titulos_menu = $_POST['menu_titulo'] ?? [];

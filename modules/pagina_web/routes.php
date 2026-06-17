@@ -10,6 +10,9 @@ $router->get('/pagina_web/colecciones', 'ColeccionesController@index');
 $router->get('/pagina_web/colecciones/nuevo', 'ColeccionesController@nuevo');
 $router->post('/pagina_web/colecciones/nuevo', 'ColeccionesController@postNuevo');
 $router->get('/pagina_web/colecciones/cambiarEstado', 'ColeccionesController@cambiarEstado');
+$router->get('/pagina_web/colecciones/editar', 'ColeccionesController@editar');
+$router->post('/pagina_web/colecciones/editar', 'ColeccionesController@postEditar');
+$router->get('/pagina_web/colecciones/eliminar', 'ColeccionesController@eliminar');
 
 $router->get('/pagina_web/constructor', 'ConstructorController@index');
 $router->get('/pagina_web/constructor/seccion', 'ConstructorController@seccion');
