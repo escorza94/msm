@@ -6,7 +6,7 @@ const qrcodeTerminal = require('qrcode-terminal');
 const { Server } = require('socket.io');
 const http = require('http');
 
-const PHP_WEBHOOK_URL = `http://127.0.0.1/MUEBES_SAN_MARTIN_GESTOR/whatsapp/webhook`;
+const PHP_WEBHOOK_URL = `http://localhost/whatsapp/webhook`;
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
@@ -14,8 +14,20 @@ const io = new Server(server, { cors: { origin: '*' } });
 app.use(cors()); // Soluciona el error de bloqueo del navegador al pedir el QR
 app.use(express.json({ limit: '50mb' })); // Aumentamos límite para recibir archivos
 
-const client = new Client({ authStrategy: new LocalAuth(), puppeteer: { args: ['--no-sandbox', '--disable-setuid-sandbox'] } });
-let qrCodeDataUrl = ''; let isConnected = false;
+const client = new Client({
+    authStrategy: new LocalAuth(),
+    puppeteer: {
+        headless: true,
+        // Forzamos la ruta del Chromium que acabamos de instalar
+        executablePath: '/usr/bin/chromium-browser', 
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-extensions'
+        ]
+    }
+});let qrCodeDataUrl = ''; let isConnected = false;
 
 client.on('qr', async (qr) => { 
     console.log('Generando nuevo código QR para escanear...');

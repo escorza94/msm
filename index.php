@@ -12,7 +12,7 @@ require_once BASE_PATH . '/core/Database.php';
 require_once BASE_PATH . '/core/Model.php';
 require_once BASE_PATH . '/core/Controller.php';
 require_once BASE_PATH . '/core/helpers.php';
-
+ 
 class Router {
     public $routes = [];
     public function get($path, $handler) { $this->routes['GET'][$path] = $handler; }

@@ -2,7 +2,9 @@
     "name": "promociones",
     "version": "1.0.0",
     "active": true,
-    "description": "",
-    "icon": "fa-tag",
-    "permissions": []
+    "permissions": [
+        {"name": "promociones.ver", "description": "Ver lista de promociones"},
+        {"name": "promociones.crear", "description": "Crear o editar cupones"}
+    ]
+    
 }
