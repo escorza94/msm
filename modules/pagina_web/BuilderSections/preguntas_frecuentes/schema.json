@@ -1,0 +1,38 @@
+{
+  "tipo": "preguntas_frecuentes",
+  "nombre": "Preguntas Frecuentes (Acordeón)",
+  "icono": "fas fa-question-circle",
+  "campos": [
+    {
+      "nombre": "titulo",
+      "label": "Título Principal",
+      "tipo": "texto",
+      "default": "Preguntas Frecuentes"
+    },
+    {
+      "nombre": "subtitulo",
+      "label": "Subtítulo Descriptivo",
+      "tipo": "textarea",
+      "default": "Encuentra respuestas rápidas a las dudas más comunes sobre nuestros servicios y productos."
+    },
+    {
+      "nombre": "faqs",
+      "label": "Preguntas y Respuestas",
+      "tipo": "repeater",
+      "campos_item": [
+        {
+          "nombre": "pregunta",
+          "label": "Pregunta",
+          "tipo": "texto",
+          "default": "¿Cómo puedo realizar un seguimiento de mi pedido?"
+        },
+        {
+          "nombre": "respuesta",
+          "label": "Respuesta",
+          "tipo": "markdown",
+          "default": "Una vez que tu pedido sea enviado, recibirás un correo electrónico con un enlace de seguimiento y el número de guía para que puedas rastrearlo en tiempo real."
+        }
+      ]
+    }
+  ]
+}

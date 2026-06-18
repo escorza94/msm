@@ -1,0 +1,12 @@
+{
+    "tipo": "grid_productos",
+    "nombre": "Cuadrícula de Productos",
+    "icono": "fa-th-large",
+    "descripcion": "Muestra una selección de productos de una colección específica.",
+    "campos": [
+        { "nombre": "titulo_seccion", "tipo": "texto", "label": "Título de la Sección", "placeholder": "Ej. Novedades" },
+        { "nombre": "subtitulo", "tipo": "texto", "label": "Subtítulo (opcional)", "placeholder": "Los mejores productos de la temporada" },
+        { "nombre": "coleccion_slug", "tipo": "coleccion_productos", "label": "Colección de Productos a Mostrar" },
+        { "nombre": "limite_mostrar", "tipo": "numero", "label": "Número de productos a mostrar", "default": 8 }
+    ]
+}

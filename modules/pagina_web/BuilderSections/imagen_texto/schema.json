@@ -1,0 +1,11 @@
+{
+    "tipo": "imagen_texto",
+    "nombre": "Imagen con Texto",
+    "icono": "fa-image",
+    "descripcion": "Una sección con una imagen a un lado y texto al otro.",
+    "campos": [
+        { "nombre": "imagen", "tipo": "imagen", "label": "Imagen" },
+        { "nombre": "contenido", "tipo": "markdown", "label": "Contenido de Texto" },
+        { "nombre": "posicion_imagen", "tipo": "select", "label": "Posición de la Imagen", "opciones": { "izquierda": "Izquierda", "derecha": "Derecha" }, "default": "izquierda" }
+    ]
+}

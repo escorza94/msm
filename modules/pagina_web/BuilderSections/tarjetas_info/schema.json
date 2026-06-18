@@ -1,0 +1,20 @@
+{
+    "tipo": "tarjetas_info",
+    "nombre": "Tarjetas de Información",
+    "icono": "fa-address-card",
+    "descripcion": "Muestra hasta 4 tarjetas con íconos, títulos y descripciones.",
+    "campos": [
+        { "nombre": "titulo_seccion", "tipo": "texto", "label": "Título Principal (opcional)" },
+        { "nombre": "subtitulo", "tipo": "texto", "label": "Subtítulo (opcional)" },
+        { 
+            "nombre": "tarjetas", 
+            "tipo": "repeater", 
+            "label": "Tarjetas",
+            "campos_item": [
+                { "nombre": "icono", "tipo": "texto", "label": "Ícono (FontAwesome)", "placeholder": "Ej. fa-truck" },
+                { "nombre": "titulo", "tipo": "texto", "label": "Título de la tarjeta" },
+                { "nombre": "descripcion", "tipo": "textarea", "label": "Descripción corta" }
+            ]
+        }
+    ]
+}

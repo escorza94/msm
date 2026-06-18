@@ -1,0 +1,9 @@
+{
+    "tipo": "texto_libre",
+    "nombre": "Bloque de Texto Libre",
+    "icono": "fa-paragraph",
+    "descripcion": "Un bloque de texto enriquecido (Markdown) con un título opcional.",
+    "campos": [
+        { "nombre": "contenido", "tipo": "markdown", "label": "Contenido Principal" }
+    ]
+}

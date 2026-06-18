@@ -1,0 +1,18 @@
+{
+    "tipo": "carrusel_banners",
+    "nombre": "Carrusel de Banners",
+    "icono": "fa-images",
+    "descripcion": "Muestra un carrusel de imágenes con títulos y enlaces.",
+    "campos": [
+        { 
+            "nombre": "banners", 
+            "tipo": "repeater", 
+            "label": "Banners del Carrusel",
+            "campos_item": [
+                { "nombre": "imagen", "tipo": "imagen", "label": "Imagen del Banner" },
+                { "nombre": "titulo", "tipo": "texto", "label": "Título (opcional)" },
+                { "nombre": "enlace", "tipo": "url", "label": "Enlace (opcional)" }
+            ]
+        }
+    ]
+}

@@ -2,7 +2,8 @@
 
 // --- RUTAS PÚBLICAS DE LA TIENDA (FRONTEND CLIENTE) ---
 $router->get('/', 'StorefrontController@index'); 
-$router->get('/pagina', 'StorefrontController@pagina'); 
+$router->get('/pagina', 'StorefrontController@pagina');
+$router->get('/producto/{slug}', 'StorefrontController@verProducto');
 
 // --- RUTAS PRIVADAS DEL PANEL DE ADMINISTRACIÓN (BACKEND ERP) ---
 $router->get('/pagina_web', 'PaginaWebController@index');

@@ -92,28 +92,36 @@ class StorefrontController extends Controller {
 
             foreach ($secciones_raw as $sec) {
                 $sec['config'] = json_decode($sec['configuracion'], true) ?: [];
+                $sec['global_config'] = $data['config']; // <-- INYECTAMOS LA CONFIGURACIÓN GLOBAL
                 
-                // Si es un grid de productos, cargar los productos de la colección indicada en su JSON
-                if ($sec['tipo'] === 'grid_productos' && !empty($sec['config']['coleccion_slug'])) {
-                    $col_slug = preg_replace('/[^a-zA-Z0-9-_]/', '', $sec['config']['coleccion_slug']);
-                    $limite = max(1, intval($sec['config']['limite_mostrar'] ?? 8));
-                    try {
-                        $sec['productos'] = $db->query("
-                            SELECT i.id, i.nombre, i.precio,
-                                   (SELECT ruta FROM inventario_imagenes img WHERE img.producto_id = i.id ORDER BY es_principal DESC, img.id ASC LIMIT 1) as imagen
-                            FROM inventario i
-                            JOIN tienda_coleccion_productos tcp ON i.id = tcp.producto_id
-                            JOIN tienda_colecciones tc ON tcp.coleccion_id = tc.id
-                            WHERE i.estado = 'activo' AND i.stock > 0
-                            AND tc.slug = '$col_slug' 
-                            ORDER BY i.id DESC
-                            LIMIT $limite
-                        ")->fetchAll(PDO::FETCH_ASSOC);
-                    } catch (\PDOException $e) {
-                        $sec['productos'] = [];
-                        // Para depuración, podemos inyectar el error en la sección
-                        $sec['error'] = $e->getMessage();
+                // --- Lógica de carga de datos para secciones modulares ---
+                $view_path = MODULES_PATH . "/pagina_web/BuilderSections/{$sec['tipo']}/view.php";
+                if (file_exists($view_path)) {
+                    // Si es un grid de productos, cargar los productos de la colección indicada en su JSON
+                    if ($sec['tipo'] === 'grid_productos' && !empty($sec['config']['coleccion_slug'])) {
+                        $col_slug = preg_replace('/[^a-zA-Z0-9-_]/', '', $sec['config']['coleccion_slug']);
+                        $limite = max(1, intval($sec['config']['limite_mostrar'] ?? 8));
+                        try {
+                            $sec['productos'] = $db->query("
+                                SELECT i.id, i.nombre, i.precio,
+                                       (SELECT ruta FROM inventario_imagenes img WHERE img.producto_id = i.id ORDER BY es_principal DESC, img.id ASC LIMIT 1) as imagen
+                                FROM inventario i
+                                JOIN tienda_coleccion_productos tcp ON i.id = tcp.producto_id
+                                JOIN tienda_colecciones tc ON tcp.coleccion_id = tc.id
+                                WHERE i.estado = 'activo' AND i.stock > 0
+                                AND tc.slug = '$col_slug' 
+                                ORDER BY i.id DESC
+                                LIMIT $limite
+                            ")->fetchAll(PDO::FETCH_ASSOC);
+                        } catch (\PDOException $e) {
+                            $sec['productos'] = [];
+                            // Para depuración, podemos inyectar el error en la sección
+                            $sec['error'] = $e->getMessage();
+                        }
                     }
+                    // Aquí podrías añadir más `if` para otros tipos de secciones que necesiten cargar datos (ej. grid_promociones)
+
+                    $sec['view_path'] = $view_path; // Guardamos la ruta de la vista para usarla en el template
                 }
                 
                 if ($sec['tipo'] === 'grid_promociones' && !empty($sec['config']['coleccion_slug'])) {
@@ -178,6 +186,63 @@ class StorefrontController extends Controller {
             require $viewPath;
         } else {
             die("Error 500: Vista no encontrada (verificación manual) en $viewPath");
+        }
+    }
+
+    public function verProducto($slug) {
+        $db = Database::getInstance();
+        $id = intval($slug); // El 'slug' de la URL es en realidad el ID del producto.
+
+        // 1. Cargar configuración global (colores, logo, etc.)
+        $sysConfig = file_exists(BASE_PATH . '/config.php') ? require BASE_PATH . '/config.php' : [];
+        $data = [
+            'google_maps_api_key' => $sysConfig['GOOGLE_MAPS_API_KEY'] ?? '',
+            'business_logo' => $sysConfig['BUSINESS_LOGO'] ?? '',
+            'config' => [],
+            'menu_enlaces' => []
+        ];
+        try {
+            $config_rows = $db->query("SELECT clave, valor FROM tienda_tema_config")->fetchAll();
+            foreach ($config_rows as $row) { $data['config'][$row['clave']] = $row['valor']; }
+            $data['menu_enlaces'] = json_decode($data['config']['menu_enlaces'] ?? '[]', true);
+        } catch (\PDOException $e) {}
+
+        // 2. Buscar el producto por su ID
+        $stmt = $db->prepare("SELECT i.*, c.nombre as categoria_nombre FROM inventario i LEFT JOIN inventario_categorias c ON i.categoria_id = c.id WHERE i.id = ? AND i.estado = 'activo'");
+        $stmt->execute([$id]);
+        $producto = $stmt->fetch();
+
+        if (!$producto) {
+            http_response_code(404);
+            die("<div style='font-family:sans-serif; text-align:center; padding:100px;'><h2 style='font-size:40px; color:#4f46e5;'>Error 404</h2><p>Producto no encontrado o no disponible.</p></div>");
+        }
+
+        // 3. Cargar galería de imágenes del producto
+        $stmtImg = $db->prepare("SELECT * FROM inventario_imagenes WHERE producto_id = ? ORDER BY es_principal DESC, id ASC");
+        $stmtImg->execute([$producto['id']]);
+        $imagenes = $stmtImg->fetchAll();
+
+        // 4. Cargar productos relacionados (misma categoría, excluyendo el actual)
+        $relacionados = $db->query("
+            SELECT i.id, i.nombre, i.precio,
+                   (SELECT ruta FROM inventario_imagenes img WHERE img.producto_id = i.id ORDER BY es_principal DESC, img.id ASC LIMIT 1) as imagen
+            FROM inventario i
+            WHERE i.categoria_id = {$producto['categoria_id']} AND i.id != {$producto['id']} AND i.estado = 'activo'
+            ORDER BY RAND() LIMIT 4
+        ")->fetchAll();
+
+        $data['titulo'] = htmlspecialchars($producto['nombre']) . ' | ' . htmlspecialchars($data['config']['nombre_empresa'] ?? 'Tienda');
+        $data['producto'] = $producto;
+        $data['imagenes'] = $imagenes;
+        $data['relacionados'] = $relacionados;
+
+        // 5. Renderizar la nueva vista de producto
+        extract($data);
+        $viewPath = MODULES_PATH . '/pagina_web/Views/tema_default/templates/producto.php';
+        if (file_exists($viewPath)) {
+            require $viewPath;
+        } else {
+            die("Error 500: La plantilla de producto no fue encontrada.");
         }
     }
 }

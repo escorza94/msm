@@ -37,28 +37,36 @@ class IaController extends Controller {
                     if (file_exists($configPath)) {
                         $config = json_decode(file_get_contents($configPath), true);
                         if (isset($config['active']) && $config['active']) {
-                            $controllerName = ucfirst($config['name']) . 'Controller';
-                            if (class_exists($controllerName)) {
-                                $controller = new $controllerName();
-                                // Extraer Herramientas del Copiloto Interno
-                                if (method_exists($controller, 'hookIaCopilotTools')) {
-                                    $tools = $controller->hookIaCopilotTools();
-                                    if (is_array($tools)) {
-                                        foreach ($tools as $tool) {
-                                            $toolName = $tool['declaration']['name'];
-                                            $estado = isset($toolsConfig[$toolName]) ? $toolsConfig[$toolName] : true;
-                                            $herramientasCopiloto[] = ['modulo' => ucfirst($config['name']), 'nombre' => $toolName, 'descripcion' => $tool['declaration']['description'], 'estado' => $estado];
-                                        }
-                                    }
-                                }
-                                // Extraer Herramientas de WhatsApp Público
-                                if (method_exists($controller, 'hookWaBotTools')) {
-                                    $tools = $controller->hookWaBotTools();
-                                    if (is_array($tools)) {
-                                        foreach ($tools as $tool) {
-                                            $toolName = $tool['declaration']['name'];
-                                            $estado = isset($toolsConfig[$toolName]) ? $toolsConfig[$toolName] : true;
-                                            $herramientasWhatsApp[] = ['modulo' => ucfirst($config['name']), 'nombre' => $toolName, 'descripcion' => $tool['declaration']['description'], 'estado' => $estado];
+                            // --- MEJORA: Escanear TODOS los controladores del módulo ---
+                            $controllersPath = MODULES_PATH . '/' . $dir . '/Controllers/';
+                            if (is_dir($controllersPath)) {
+                                foreach (scandir($controllersPath) as $controllerFile) {
+                                    if (pathinfo($controllerFile, PATHINFO_EXTENSION) === 'php') {
+                                        $controllerName = pathinfo($controllerFile, PATHINFO_FILENAME);
+                                        if (class_exists($controllerName)) {
+                                            $controller = new $controllerName();
+                                            // Extraer Herramientas del Copiloto Interno
+                                            if (method_exists($controller, 'hookIaCopilotTools')) {
+                                                $tools = $controller->hookIaCopilotTools();
+                                                if (is_array($tools)) {
+                                                    foreach ($tools as $tool) {
+                                                        $toolName = $tool['declaration']['name'];
+                                                        $estado = $toolsConfig[$toolName] ?? true;
+                                                        $herramientasCopiloto[] = ['modulo' => ucfirst($config['name']), 'nombre' => $toolName, 'descripcion' => $tool['declaration']['description'], 'estado' => $estado];
+                                                    }
+                                                }
+                                            }
+                                            // Extraer Herramientas de WhatsApp Público
+                                            if (method_exists($controller, 'hookWaBotTools')) {
+                                                $tools = $controller->hookWaBotTools();
+                                                if (is_array($tools)) {
+                                                    foreach ($tools as $tool) {
+                                                        $toolName = $tool['declaration']['name'];
+                                                        $estado = $toolsConfig[$toolName] ?? true;
+                                                        $herramientasWhatsApp[] = ['modulo' => ucfirst($config['name']), 'nombre' => $toolName, 'descripcion' => $tool['declaration']['description'], 'estado' => $estado];
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -302,17 +310,25 @@ class IaController extends Controller {
                         $config = json_decode(file_get_contents($configPath), true);
                         if (isset($config['active']) && $config['active']) {
                             $modulosActivos[] = "- Módulo " . ucfirst($config['name']) . ": " . base_url($config['name']);
-                            $controllerName = ucfirst($config['name']) . 'Controller';
-                            if (class_exists($controllerName)) {
-                                $controller = new $controllerName();
-                                if (method_exists($controller, 'hookIaCopilotTools')) {
-                                    $tools = $controller->hookIaCopilotTools();
-                                    if (is_array($tools)) {
-                                        foreach ($tools as $tool) {
-                                            $toolName = $tool['declaration']['name'];
-                                            if (isset($toolsConfig[$toolName]) && $toolsConfig[$toolName] === false) continue;
-                                            $toolsDeclarations[] = $tool['declaration'];
-                                            $registeredTools[$toolName] = $controller;
+                            // --- MEJORA: Escanear TODOS los controladores del módulo ---
+                            $controllersPath = MODULES_PATH . '/' . $dir . '/Controllers/';
+                            if (is_dir($controllersPath)) {
+                                foreach (scandir($controllersPath) as $controllerFile) {
+                                    if (pathinfo($controllerFile, PATHINFO_EXTENSION) === 'php') {
+                                        $controllerName = pathinfo($controllerFile, PATHINFO_FILENAME);
+                                        if (class_exists($controllerName)) {
+                                            $controller = new $controllerName();
+                                            if (method_exists($controller, 'hookIaCopilotTools')) {
+                                                $tools = $controller->hookIaCopilotTools();
+                                                if (is_array($tools)) {
+                                                    foreach ($tools as $tool) {
+                                                        $toolName = $tool['declaration']['name'];
+                                                        if (isset($toolsConfig[$toolName]) && $toolsConfig[$toolName] === false) continue;
+                                                        $toolsDeclarations[] = $tool['declaration'];
+                                                        $registeredTools[$toolName] = $controller;
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -356,8 +372,15 @@ class IaController extends Controller {
             
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
             $response = curl_exec($ch);
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             
+            // --- MEJORA: Manejo robusto de errores de conexión cURL ---
+            if ($response === false) {
+                $error_msg = curl_error($ch);
+                curl_close($ch);
+                json_response(['error' => 'Error de cURL al conectar con la API de Gemini.', 'details' => $error_msg], 500);
+            }
+            
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if($httpCode != 200) { curl_close($ch); json_response(['error' => 'Error de Gemini API (Ciclo '.$cicloActual.')', 'details' => json_decode($response)], 500); }
             $resData = json_decode($response, true);
             $partes = $resData['candidates'][0]['content']['parts'] ?? [];
@@ -416,8 +439,28 @@ class IaController extends Controller {
 
         if (empty(trim($respuestaIA))) { json_response(['error' => 'Gemini no devolvió texto o alcanzó el límite de herramientas (Safety/Loop).', 'details' => $resData ?? []], 500); }
 
-        // 6. Guardar la respuesta generada por la IA en la BD
-        $db->prepare("INSERT INTO ia_conversaciones_internas (usuario_id, role, mensaje) VALUES (?, 'model', ?)")->execute([$usuario_id, $respuestaIA]);
-        json_response(['status' => 'success', 'respuesta' => $respuestaIA]);
+        // 6. Limpiar la respuesta para asegurar que sea UTF-8 válido.
+        $respuestaLimpia = mb_convert_encoding($respuestaIA, 'UTF-8', 'UTF-8');
+
+        // 7. Guardar la respuesta generada por la IA en la BD
+        $db->prepare("INSERT INTO ia_conversaciones_internas (usuario_id, role, mensaje) VALUES (?, 'model', ?)")->execute([$usuario_id, $respuestaLimpia]);
+        
+        // --- MEJORA: Envío de JSON a prueba de errores de salida ---
+        // 8. Limpiar cualquier salida inesperada (warnings, notices) que pueda corromper el JSON.
+        if (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+        
+        // 9. Construir y enviar la respuesta JSON manualmente con verificación de errores.
+        $responseData = ['status' => 'success', 'respuesta' => $respuestaLimpia];
+        $jsonOutput = json_encode($responseData);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            json_response(['error' => 'Error al codificar la respuesta a JSON', 'details' => json_last_error_msg()], 500);
+        }
+
+        header('Content-Type: application/json');
+        echo $jsonOutput;
+        exit;
     }
 }

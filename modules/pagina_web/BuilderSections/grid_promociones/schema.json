@@ -1,0 +1,10 @@
+{
+    "tipo": "grid_promociones",
+    "nombre": "Cuadrícula de Promociones",
+    "icono": "fa-tags",
+    "descripcion": "Muestra una selección de promociones de una colección específica.",
+    "campos": [
+        { "nombre": "titulo_seccion", "tipo": "texto", "label": "Título de la Sección", "placeholder": "Ej. Ofertas del Mes" },
+        { "nombre": "coleccion_slug", "tipo": "coleccion_promociones", "label": "Colección de Promociones a Mostrar" }
+    ]
+}

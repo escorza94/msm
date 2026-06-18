@@ -28,22 +28,35 @@ class Router {
         $uri = parse_url($uri, PHP_URL_PATH) ?: '/';
         if (strpos($uri, '/index.php') === 0) { $uri = substr($uri, 10) ?: '/'; }
 
-        if (isset($this->routes[$method][$uri])) {
-            $handler = $this->routes[$method][$uri];
-            if (is_callable($handler)) { call_user_func($handler); return; }
-            
-            list($controllerName, $methodName) = explode('@', $handler);
-            if (class_exists($controllerName)) {
-                $controller = new $controllerName();
-                if (method_exists($controller, $methodName)) {
-                    $controller->$methodName();
-                } else {
-                    http_response_code(500); echo "<h2>500 - Método '$methodName' no existe</h2>";
+        // --- MEJORA: Soporte para rutas dinámicas y estáticas ---
+        foreach ($this->routes[$method] as $route => $handler) {
+            // Convertir la ruta (ej. /producto/{slug}) en una expresión regular
+            $pattern = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '(?P<$1>[^/]+)', $route);
+            $pattern = '#^' . str_replace('/', '\/', $pattern) . '$#';
+
+            if (preg_match($pattern, $uri, $matches)) {
+                // Extraer parámetros de la URL (ej. ['slug' => 'silla-moderna'])
+                $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
+
+                if (is_callable($handler)) {
+                    call_user_func_array($handler, $params);
+                    return;
                 }
-            } else {
-                http_response_code(500); echo "<h2>500 - Controlador no encontrado</h2>";
+
+                list($controllerName, $methodName) = explode('@', $handler);
+                if (class_exists($controllerName)) {
+                    $controller = new $controllerName();
+                    if (method_exists($controller, $methodName)) {
+                        // Llamar al método del controlador pasándole los parámetros de la URL
+                        call_user_func_array([$controller, $methodName], $params);
+                        return;
+                    }
+                }
             }
-        } else {
+        }
+
+        // --- Lógica de fallback si ninguna ruta coincide ---
+        // 1. Identificar si la ruta mal escrita era para el panel de administración (ERP)
             // 1. Identificar si la ruta mal escrita era para el panel de administración (ERP)
             $erp_prefixes = ['/pos', '/pagina_web', '/promociones', '/ia', '/notificaciones', '/inventario', '/clientes', '/finanzas', '/logistica', '/usuarios', '/auth', '/dashboard', '/api'];
             $is_erp = false;
@@ -61,7 +74,6 @@ class Router {
             // 3. Si era una ruta del ERP (ej. /pos/rutafalsa), mostramos un error 404 limpio de backend
             http_response_code(404); 
             echo "<div style='font-family:sans-serif; text-align:center; padding:100px; background:#f9fafb; min-height:100vh;'><h2 style='font-size:30px; color:#ef4444;'>Error 404 - Panel Administrativo</h2><p style='color:#6b7280;'>La ruta <b>'$uri'</b> no existe o el módulo no está activo.</p><br><a href='javascript:history.back()' style='display:inline-block; padding:10px 20px; background:#3b82f6; color:#fff; text-decoration:none; border-radius:8px; font-weight:bold;'>Regresar</a></div>";
-        }
     }
 }
 

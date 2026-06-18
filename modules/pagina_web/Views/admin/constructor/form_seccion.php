@@ -30,171 +30,152 @@
             </div>
         </div>
 
-        <!-- DINÁMICO: Texto Libre -->
-        <?php if ($tipo === 'texto_libre'): ?>
+        <!-- RENDERIZADOR DINÁMICO DE CAMPOS -->
+        <?php if (isset($schema) && !empty($schema['campos'])): ?>
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <h3 class="font-bold text-gray-800 mb-4 border-b border-gray-100 pb-2"><i class="fas fa-pen text-indigo-500 mr-2"></i> Contenido del Bloque</h3>
+            <h3 class="font-bold text-gray-800 mb-4 border-b border-gray-100 pb-2"><i class="fas <?= htmlspecialchars($schema['icono'] ?? 'fa-cogs') ?> text-indigo-500 mr-2"></i> Contenido de la Sección</h3>
             <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Título Grande (Opcional)</label>
-                    <input type="text" name="titulo_seccion" value="<?= htmlspecialchars($seccion['config']['titulo_seccion'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-indigo-500 outline-none" placeholder="Ej. Nuestra Historia">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Texto o Párrafos</label>
-                    <textarea name="contenido" rows="8" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-indigo-500 outline-none"><?= htmlspecialchars($seccion['config']['contenido'] ?? '') ?></textarea>
-                    <p class="text-[10px] text-gray-400 mt-1">Los saltos de línea se respetarán en la página web automáticamente.</p>
-                </div>
-            </div>
-        </div>
+                <?php foreach ($schema['campos'] as $campo): ?>
+                    <?php
+                        $nombre_campo = $campo['nombre'];
+                        $valor_actual = $seccion['config'][$nombre_campo] ?? $campo['default'] ?? null;
+                    ?>
+                    <div class="border-t border-gray-100 pt-4">
+                        <label class="block text-sm font-bold text-gray-700 mb-2"><?= htmlspecialchars($campo['label']) ?></label>
 
-        <!-- DINÁMICO: Grid Productos -->
-        <?php elseif ($tipo === 'grid_productos'): ?>
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <h3 class="font-bold text-gray-800 mb-4 border-b border-gray-100 pb-2"><i class="fas fa-th text-green-500 mr-2"></i> Catálogo de Exhibición</h3>
-            <div class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Título de la Sección</label>
-                        <input type="text" name="titulo_seccion" value="<?= htmlspecialchars($seccion['config']['titulo_seccion'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none" placeholder="Ej. Lo Más Vendido">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Subtítulo (Opcional)</label>
-                        <input type="text" name="subtitulo" value="<?= htmlspecialchars($seccion['config']['subtitulo'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none" placeholder="Ej. Encuentra tu favorito">
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">¿Qué colección mostrar?</label>
-                        <select name="coleccion_slug" required class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none bg-white">
-                            <option value="">-- Selecciona una --</option>
-                            <?php foreach($colecciones_productos ?? [] as $col): ?>
-                                <option value="<?= $col['slug'] ?>" <?= ($seccion['config']['coleccion_slug'] ?? '') === $col['slug'] ? 'selected' : '' ?>><?= htmlspecialchars($col['nombre']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Límite de Productos a mostrar</label>
-                        <input type="number" name="limite_mostrar" value="<?= intval($seccion['config']['limite_mostrar'] ?? 8) ?>" min="1" max="24" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none">
-                    </div>
-                </div>
-            </div>
-        </div>
+                        <?php switch ($campo['tipo']):
+                            case 'texto':
+                            case 'url':
+                            case 'numero': ?>
+                                <input type="<?= $campo['tipo'] === 'numero' ? 'number' : 'text' ?>" name="config[<?= $nombre_campo ?>]" value="<?= htmlspecialchars($valor_actual ?? '') ?>" placeholder="<?= htmlspecialchars($campo['placeholder'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                                <?php break; ?>
 
-        <!-- DINÁMICO: Tarjetas Informativas -->
-        <?php elseif ($tipo === 'tarjetas_info'): ?>
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <h3 class="font-bold text-gray-800 mb-4 border-b border-gray-100 pb-2"><i class="fas fa-star text-amber-500 mr-2"></i> Tarjetas (Ventajas / Beneficios)</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Título de Sección</label><input type="text" name="titulo_seccion" value="<?= htmlspecialchars($seccion['config']['titulo_seccion'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"></div>
-                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Subtítulo</label><input type="text" name="subtitulo" value="<?= htmlspecialchars($seccion['config']['subtitulo'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"></div>
-            </div>
-            <div id="tarjetas-container" class="space-y-3">
-                <?php $tarjetas = $seccion['config']['tarjetas'] ?? [['titulo'=>'', 'icono'=>'fas fa-star', 'descripcion'=>'']]; ?>
-                <?php foreach($tarjetas as $t): ?>
-                <div class="flex gap-2 items-start bg-gray-50 p-3 rounded-lg border border-gray-200">
-                    <input type="text" name="tarjeta_icono[]" value="<?= htmlspecialchars($t['icono']) ?>" class="w-20 border border-gray-300 rounded-md px-2 py-2 text-sm text-center" placeholder="fa-star">
-                    <div class="flex-1 space-y-2">
-                        <input type="text" name="tarjeta_titulo[]" value="<?= htmlspecialchars($t['titulo']) ?>" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm font-bold" placeholder="Ej. Envío Gratis">
-                        <textarea name="tarjeta_descripcion[]" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" rows="2" placeholder="Descripción breve..."><?= htmlspecialchars($t['descripcion']) ?></textarea>
+                            <?php case 'textarea': ?>
+                                <textarea name="config[<?= $nombre_campo ?>]" rows="4" placeholder="<?= htmlspecialchars($campo['placeholder'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"><?= htmlspecialchars($valor_actual ?? '') ?></textarea>
+                                <?php break; ?>
+
+                            <?php case 'markdown': ?>
+                                <textarea name="config[<?= $nombre_campo ?>]" rows="6" placeholder="<?= htmlspecialchars($campo['placeholder'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"><?= htmlspecialchars($valor_actual ?? '') ?></textarea>
+                                <p class="text-xs text-gray-400 mt-1">Puedes usar <a href="https://www.markdownguide.org/basic-syntax/" target="_blank" class="text-indigo-500 underline">sintaxis Markdown</a> para negritas, listas, etc.</p>
+                                <?php break; ?>
+
+                            <?php case 'select': ?>
+                                <select name="config[<?= $nombre_campo ?>]" class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <?php foreach ($campo['opciones'] as $val => $label): ?>
+                                        <option value="<?= $val ?>" <?= ($valor_actual == $val) ? 'selected' : '' ?>><?= htmlspecialchars($label) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <?php break; ?>
+
+                            <?php case 'coleccion_productos': ?>
+                                <select name="config[<?= $nombre_campo ?>]" required class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="">-- Selecciona una colección --</option>
+                                    <?php foreach($colecciones_productos ?? [] as $col): ?>
+                                        <option value="<?= $col['slug'] ?>" <?= ($valor_actual === $col['slug']) ? 'selected' : '' ?>><?= htmlspecialchars($col['nombre']) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <?php break; ?>
+
+                            <?php case 'coleccion_promociones': ?>
+                                <select name="config[<?= $nombre_campo ?>]" required class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="">-- Selecciona una colección --</option>
+                                    <?php foreach($colecciones_promociones ?? [] as $col): ?>
+                                        <option value="<?= $col['slug'] ?>" <?= ($valor_actual === $col['slug']) ? 'selected' : '' ?>><?= htmlspecialchars($col['nombre']) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <?php break; ?>
+
+                            <?php case 'imagen': ?>
+                                <input type="hidden" name="config[<?= $nombre_campo ?>_existente]" value="<?= htmlspecialchars($valor_actual ?? '') ?>">
+                                <input type="file" name="config[<?= $nombre_campo ?>]" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 outline-none transition cursor-pointer mb-2">
+                                <?php if(!empty($valor_actual)): ?><img src="<?= base_url($valor_actual) ?>" class="h-24 rounded-lg shadow-sm border bg-gray-50 object-contain"><?php endif; ?>
+                                <?php break; ?>
+
+                            <?php case 'repeater': ?>
+                                <div id="repeater-<?= $nombre_campo ?>" class="space-y-3">
+                                    <?php $items = $valor_actual ?? []; ?>
+                                    <?php 
+                                        // --- MEJORA: Prevenir error en secciones nuevas ---
+                                        // Si no hay items, creamos uno vacío pero con las claves definidas para evitar errores de "Undefined index".
+                                        if(empty($items)) {
+                                            $item_vacio = [];
+                                            foreach($campo['campos_item'] as $sub_campo) { $item_vacio[$sub_campo['nombre']] = ''; }
+                                            $items = [$item_vacio];
+                                        }
+                                    ?>
+                                    <?php foreach($items as $item): ?>
+                                        <div class="repeater-item bg-gray-50 p-4 rounded-lg border border-gray-200 relative">
+                                            <button type="button" onclick="this.closest('.repeater-item').remove()" class="absolute top-2 right-2 text-red-400 hover:text-red-600 p-1.5 rounded-full hover:bg-red-50 transition"><i class="fas fa-times"></i></button>
+                                            <div class="space-y-3">
+                                                <?php foreach($campo['campos_item'] as $sub_campo): ?>
+                                                    <?php
+                                                        $sub_nombre = $sub_campo['nombre'];
+                                                        $sub_valor = $item[$sub_nombre] ?? $sub_campo['default'] ?? '';
+                                                    ?>
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1"><?= htmlspecialchars($sub_campo['label']) ?></label>
+                                                        <?php if($sub_campo['tipo'] === 'imagen'): ?>
+                                                            <input type="hidden" name="config[<?= $nombre_campo ?>][<?= $sub_nombre ?>_existente][]" value="<?= htmlspecialchars($sub_valor) ?>">
+                                                            <div class="flex items-center gap-3">
+                                                                <?php if(!empty($sub_valor)): ?><img src="<?= base_url($sub_valor) ?>" class="h-12 w-12 object-cover rounded border bg-white"><?php endif; ?>
+                                                                <input type="file" name="config[<?= $nombre_campo ?>][<?= $sub_nombre ?>][]" accept="image/*" class="w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                                                            </div>
+                                                        <?php elseif($sub_campo['tipo'] === 'textarea'): ?>
+                                                            <textarea name="config[<?= $nombre_campo ?>][<?= $sub_nombre ?>][]" rows="2" placeholder="<?= htmlspecialchars($sub_campo['placeholder'] ?? '') ?>" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500"><?= htmlspecialchars($sub_valor) ?></textarea>
+                                                        <?php else: ?>
+                                                            <input type="text" name="config[<?= $nombre_campo ?>][<?= $sub_nombre ?>][]" value="<?= htmlspecialchars($sub_valor) ?>" placeholder="<?= htmlspecialchars($sub_campo['placeholder'] ?? '') ?>" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500">
+                                                        <?php endif; ?>
+                                                    </div>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                                <button type="button" onclick="agregarItemRepeater('<?= $nombre_campo ?>')" class="mt-3 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-sm font-bold border border-indigo-100 hover:bg-indigo-100 transition"><i class="fas fa-plus mr-1"></i> Añadir Item</button>
+                                
+                                <template id="template-<?= $nombre_campo ?>">
+                                    <div class="repeater-item bg-gray-50 p-4 rounded-lg border border-gray-200 relative">
+                                        <button type="button" onclick="this.closest('.repeater-item').remove()" class="absolute top-2 right-2 text-red-400 hover:text-red-600 p-1.5 rounded-full hover:bg-red-50 transition"><i class="fas fa-times"></i></button>
+                                        <div class="space-y-3">
+                                            <?php foreach($campo['campos_item'] as $sub_campo): ?>
+                                                <div>
+                                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1"><?= htmlspecialchars($sub_campo['label']) ?></label>
+                                                    <?php if($sub_campo['tipo'] === 'imagen'): ?>
+                                                        <input type="hidden" name="config[<?= $nombre_campo ?>][<?= $sub_campo['nombre'] ?>_existente][]" value="">
+                                                        <input type="file" name="config[<?= $nombre_campo ?>][<?= $sub_campo['nombre'] ?>][]" accept="image/*" class="w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                                                    <?php elseif($sub_campo['tipo'] === 'textarea'): ?>
+                                                        <textarea name="config[<?= $nombre_campo ?>][<?= $sub_campo['nombre'] ?>][]" rows="2" placeholder="<?= htmlspecialchars($sub_campo['placeholder'] ?? '') ?>" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500"></textarea>
+                                                    <?php else: ?>
+                                                        <input type="text" name="config[<?= $nombre_campo ?>][<?= $sub_campo['nombre'] ?>][]" value="<?= htmlspecialchars($sub_campo['default'] ?? '') ?>" placeholder="<?= htmlspecialchars($sub_campo['placeholder'] ?? '') ?>" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500">
+                                                    <?php endif; ?>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </div>
+                                </template>
+                                <?php break; ?>
+
+                        <?php endswitch; ?>
                     </div>
-                    <button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:bg-red-100 p-2 rounded"><i class="fas fa-trash"></i></button>
-                </div>
                 <?php endforeach; ?>
-            </div>
-            <button type="button" onclick="agregarTarjeta()" class="mt-3 text-sm text-indigo-600 font-bold hover:underline"><i class="fas fa-plus mr-1"></i> Añadir otra tarjeta</button>
-            <script>function agregarTarjeta(){ document.getElementById('tarjetas-container').insertAdjacentHTML('beforeend', `<div class="flex gap-2 items-start bg-gray-50 p-3 rounded-lg border border-gray-200"><input type="text" name="tarjeta_icono[]" value="fas fa-check" class="w-20 border border-gray-300 rounded-md px-2 py-2 text-sm text-center"><div class="flex-1 space-y-2"><input type="text" name="tarjeta_titulo[]" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm font-bold" placeholder="Nuevo Beneficio"><textarea name="tarjeta_descripcion[]" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" rows="2" placeholder="Descripción..."></textarea></div><button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:bg-red-100 p-2 rounded"><i class="fas fa-trash"></i></button></div>`); }</script>
-        </div>
-
-        <!-- DINÁMICO: Carrusel Banners -->
-        <?php elseif ($tipo === 'carrusel_banners'): ?>
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <h3 class="font-bold text-gray-800 mb-4 border-b border-gray-100 pb-2"><i class="fas fa-images text-blue-500 mr-2"></i> Imágenes del Carrusel</h3>
-            <div id="banners-container" class="space-y-4">
-                <?php $banners = $seccion['config']['banners'] ?? [['titulo'=>'', 'enlace'=>'', 'imagen'=>'']]; ?>
-                <?php foreach($banners as $b): ?>
-                <div class="flex flex-col md:flex-row gap-4 items-center bg-gray-50 p-4 rounded-lg border border-gray-200 relative">
-                    <button type="button" onclick="this.parentElement.remove()" class="absolute top-2 right-2 text-red-500 hover:bg-red-100 p-1.5 rounded"><i class="fas fa-times"></i></button>
-                    <div class="w-full md:w-32 h-20 bg-gray-200 rounded flex-shrink-0 overflow-hidden border border-gray-300">
-                        <?php if(!empty($b['imagen'])): ?><img src="<?= base_url($b['imagen']) ?>" class="w-full h-full object-cover"><?php else: ?><div class="flex items-center justify-center h-full text-xs text-gray-400">Sin foto</div><?php endif; ?>
-                    </div>
-                    <div class="flex-1 w-full space-y-2">
-                        <input type="hidden" name="banner_imagen_existente[]" value="<?= htmlspecialchars($b['imagen']) ?>">
-                        <input type="file" name="banner_imagen[]" accept="image/*" class="text-xs text-gray-500 w-full file:mr-4 file:py-1.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
-                        <div class="flex gap-2">
-                            <input type="text" name="banner_titulo[]" value="<?= htmlspecialchars($b['titulo']) ?>" class="w-1/2 border border-gray-300 rounded-md px-3 py-1.5 text-sm" placeholder="Título para accesibilidad">
-                            <input type="text" name="banner_enlace[]" value="<?= htmlspecialchars($b['enlace']) ?>" class="w-1/2 border border-gray-300 rounded-md px-3 py-1.5 text-sm" placeholder="Enlace al hacer clic (Ej. #contacto)">
-                        </div>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-            <button type="button" onclick="agregarBanner()" class="mt-4 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-sm font-bold border border-indigo-100 hover:bg-indigo-100 transition"><i class="fas fa-plus mr-1"></i> Añadir otra imagen</button>
-            <script>function agregarBanner(){ document.getElementById('banners-container').insertAdjacentHTML('beforeend', `<div class="flex flex-col md:flex-row gap-4 items-center bg-gray-50 p-4 rounded-lg border border-gray-200 relative"><button type="button" onclick="this.parentElement.remove()" class="absolute top-2 right-2 text-red-500 hover:bg-red-100 p-1.5 rounded"><i class="fas fa-times"></i></button><div class="w-full md:w-32 h-20 bg-gray-200 rounded flex-shrink-0 flex items-center justify-center text-xs text-gray-400 border border-gray-300">Nueva</div><div class="flex-1 w-full space-y-2"><input type="hidden" name="banner_imagen_existente[]" value=""><input type="file" name="banner_imagen[]" accept="image/*" class="text-xs text-gray-500 w-full file:mr-4 file:py-1.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" required><div class="flex gap-2"><input type="text" name="banner_titulo[]" class="w-1/2 border border-gray-300 rounded-md px-3 py-1.5 text-sm" placeholder="Título"><input type="text" name="banner_enlace[]" class="w-1/2 border border-gray-300 rounded-md px-3 py-1.5 text-sm" placeholder="Enlace URL"></div></div></div>`); }</script>
-        </div>
-        
-        <!-- DINÁMICO: Imagen con Texto -->
-        <?php elseif ($tipo === 'imagen_texto'): ?>
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <h3 class="font-bold text-gray-800 mb-4 border-b border-gray-100 pb-2"><i class="fas fa-id-card text-purple-500 mr-2"></i> Imagen y Texto</h3>
-            <div class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Título Grande</label>
-                        <input type="text" name="titulo_seccion" value="<?= htmlspecialchars($seccion['config']['titulo_seccion'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none" placeholder="Ej. Sobre Nosotros">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Posición de la Imagen</label>
-                        <select name="posicion_imagen" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none bg-white">
-                            <option value="izquierda" <?= ($seccion['config']['posicion_imagen'] ?? '') === 'izquierda' ? 'selected' : '' ?>>Imagen a la Izquierda</option>
-                            <option value="derecha" <?= ($seccion['config']['posicion_imagen'] ?? '') === 'derecha' ? 'selected' : '' ?>>Imagen a la Derecha</option>
-                        </select>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Imagen</label>
-                    <input type="hidden" name="imagen_existente" value="<?= htmlspecialchars($seccion['config']['imagen'] ?? '') ?>">
-                    <input type="file" name="imagen" accept="image/*" class="w-full text-sm mb-2">
-                    <?php if(!empty($seccion['config']['imagen'])): ?><img src="<?= base_url($seccion['config']['imagen']) ?>" class="h-24 rounded-lg shadow-sm border"><?php endif; ?>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Texto o Párrafos</label>
-                    <textarea name="contenido" rows="6" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none"><?= htmlspecialchars($seccion['config']['contenido'] ?? '') ?></textarea>
-                </div>
-            </div>
-        </div>
-        
-        <!-- DINÁMICO: Grid Promociones -->
-        <?php elseif ($tipo === 'grid_promociones'): ?>
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <h3 class="font-bold text-gray-800 mb-4 border-b border-gray-100 pb-2"><i class="fas fa-tags text-pink-500 mr-2"></i> Colección de Promociones</h3>
-            <div class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Título de la Sección</label><input type="text" name="titulo_seccion" value="<?= htmlspecialchars($seccion['config']['titulo_seccion'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none" placeholder="Ej. Promociones Calientes"></div>
-                    <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Subtítulo (Opcional)</label><input type="text" name="subtitulo" value="<?= htmlspecialchars($seccion['config']['subtitulo'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none" placeholder="Ej. Aprovecha estos descuentos"></div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">¿Qué colección de promociones mostrar?</label>
-                        <select name="coleccion_slug" required class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none bg-white">
-                            <option value="">-- Selecciona una --</option>
-                            <?php foreach($colecciones_promociones ?? [] as $col): ?>
-                                <option value="<?= $col['slug'] ?>" <?= ($seccion['config']['coleccion_slug'] ?? '') === $col['slug'] ? 'selected' : '' ?>><?= htmlspecialchars($col['nombre']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Límite de Promos a mostrar</label>
-                        <input type="number" name="limite_mostrar" value="<?= intval($seccion['config']['limite_mostrar'] ?? 6) ?>" min="1" max="24" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none">
-                    </div>
-                </div>
             </div>
         </div>
         <?php endif; ?>
 
         <div class="flex justify-end pt-4">
             <button type="submit" class="px-6 py-3 bg-amber-500 text-white rounded-lg shadow-sm font-bold hover:bg-amber-600 transition flex items-center text-lg">
-                <i class="fas fa-save mr-2"></i> Guardar Módulo
+                <i class="fas fa-save mr-2"></i> Guardar Sección
             </button>
         </div>
     </form>
 </div>
+
+<script>
+function agregarItemRepeater(nombreCampo) {
+    const template = document.getElementById(`template-${nombreCampo}`);
+    const container = document.getElementById(`repeater-${nombreCampo}`);
+    if (template && container) {
+        container.appendChild(template.content.cloneNode(true));
+    }
+}
+</script>
