@@ -103,8 +103,8 @@ class UsuariosController extends Controller {
         $name = sanitize($_POST['name'] ?? '');
         $email = sanitize($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
-        $rol = sanitize($_POST['rol'] ?? 'asesor');
         $whatsapp_id = sanitize($_POST['whatsapp_id'] ?? null);
+        $roles_asignados = isset($_POST['roles']) && is_array($_POST['roles']) ? $_POST['roles'] : [];
 
         if(empty($name) || empty($email) || empty($password)) {
             redirect(base_url('usuarios/nuevo?error=Campos vacíos'));
@@ -116,11 +116,25 @@ class UsuariosController extends Controller {
         if($stmt->fetch()) { redirect(base_url('usuarios/nuevo?error=El correo ya está registrado')); }
 
         $hash = password_hash($password, PASSWORD_DEFAULT);
-        // Asumimos role_id 2 (usuario) como default, pero guardamos el string en 'rol' si lo tienes, o lo omites si usas role_id
-        $stmt = $db->prepare("INSERT INTO users (role_id, name, email, password, whatsapp_id) VALUES (2, ?, ?, ?, ?)");
-        if($stmt->execute([$name, $email, $hash, $whatsapp_id])) {
+        $main_role = !empty($roles_asignados) ? intval($roles_asignados[0]) : 2;
+
+        try {
+            $db->beginTransaction();
+            $stmt = $db->prepare("INSERT INTO users (role_id, name, email, password, whatsapp_id) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$main_role, $name, $email, $hash, $whatsapp_id]);
+            $nuevo_id = $db->lastInsertId();
+            
+            if (!empty($roles_asignados)) {
+                $stmtRoles = $db->prepare("INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)");
+                foreach ($roles_asignados as $r_id) {
+                    $stmtRoles->execute([$nuevo_id, intval($r_id)]);
+                }
+            }
+            
+            $db->commit();
             redirect(base_url('usuarios?success=Usuario creado exitosamente.'));
-        } else {
+        } catch (\Exception $e) {
+            if ($db->inTransaction()) $db->rollBack();
             redirect(base_url('usuarios/nuevo?error=Error al crear usuario'));
         }
     }
@@ -165,13 +179,31 @@ class UsuariosController extends Controller {
         if(empty($name) || empty($email)) redirect(base_url("usuarios/editar?id=$id&error=El nombre y correo son obligatorios"));
 
         $db = Database::getInstance();
-        if(!empty($password)) {
-            $hash = password_hash($password, PASSWORD_DEFAULT);
-            $db->prepare("UPDATE users SET name = ?, email = ?, password = ?, whatsapp_id = ? WHERE id = ?")->execute([$name, $email, $hash, $whatsapp_id, $id]);
-        } else {
-            $db->prepare("UPDATE users SET name = ?, email = ?, whatsapp_id = ? WHERE id = ?")->execute([$name, $email, $whatsapp_id, $id]);
+        $main_role = !empty($roles_asignados) ? intval($roles_asignados[0]) : 2;
+
+        try {
+            $db->beginTransaction();
+            if(!empty($password)) {
+                $hash = password_hash($password, PASSWORD_DEFAULT);
+                $db->prepare("UPDATE users SET role_id = ?, name = ?, email = ?, password = ?, whatsapp_id = ? WHERE id = ?")->execute([$main_role, $name, $email, $hash, $whatsapp_id, $id]);
+            } else {
+                $db->prepare("UPDATE users SET role_id = ?, name = ?, email = ?, whatsapp_id = ? WHERE id = ?")->execute([$main_role, $name, $email, $whatsapp_id, $id]);
+            }
+            
+            $db->prepare("DELETE FROM user_roles WHERE user_id = ?")->execute([$id]);
+            if (!empty($roles_asignados)) {
+                $stmtRoles = $db->prepare("INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)");
+                foreach ($roles_asignados as $r_id) {
+                    $stmtRoles->execute([$id, intval($r_id)]);
+                }
+            }
+            
+            $db->commit();
+            redirect(base_url('usuarios?success=Usuario actualizado exitosamente'));
+        } catch (\Exception $e) {
+            if ($db->inTransaction()) $db->rollBack();
+            redirect(base_url("usuarios/editar?id=$id&error=Error al actualizar usuario"));
         }
-        redirect(base_url('usuarios?success=Usuario actualizado exitosamente'));
     }
 
     public function registro() {

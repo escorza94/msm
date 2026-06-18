@@ -19,7 +19,8 @@
                 <tr class="bg-gray-50 text-gray-500 text-xs uppercase border-b border-gray-100">
                     <th class="p-4 font-medium">Nombre</th>
                     <th class="p-4 font-medium">Slug (URL)</th>
-                    <th class="p-4 font-medium text-center">Productos</th>
+                    <th class="p-4 font-medium text-center">Tipo</th>
+                    <th class="p-4 font-medium text-center">Artículos</th>
                     <th class="p-4 font-medium text-center">Estado</th>
                     <th class="p-4 font-medium text-center">Acciones</th>
                 </tr>
@@ -31,7 +32,14 @@
                     <tr class="hover:bg-gray-50 transition">
                         <td class="p-4 font-bold text-gray-800"><?= htmlspecialchars($c['nombre']) ?></td>
                         <td class="p-4 font-mono text-gray-500 text-xs"><?= htmlspecialchars($c['slug']) ?></td>
-                        <td class="p-4 text-center"><span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-bold"><?= $c['total_productos_visibles'] ?> items</span></td>
+                        <td class="p-4 text-center">
+                            <?php if(($c['tipo'] ?? 'productos') === 'productos'): ?>
+                                <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold"><i class="fas fa-box mr-1"></i> Productos</span>
+                            <?php else: ?>
+                                <span class="bg-pink-100 text-pink-700 px-2 py-1 rounded text-xs font-bold"><i class="fas fa-tags mr-1"></i> Promociones</span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="p-4 text-center"><span class="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs font-bold"><?= ($c['tipo'] ?? 'productos') === 'productos' ? $c['total_productos_visibles'] : ($c['total_promociones'] ?? 0) ?> items</span></td>
                         <td class="p-4 text-center">
                             <a href="<?= base_url('pagina_web/colecciones/cambiarEstado?id=' . $c['id']) ?>" class="px-2 py-1 rounded text-[10px] uppercase font-bold <?= $c['estado'] === 'activo' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' ?> hover:opacity-80">
                                 <?= $c['estado'] ?>

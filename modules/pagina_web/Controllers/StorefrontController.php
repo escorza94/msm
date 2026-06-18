@@ -108,6 +108,44 @@ class StorefrontController extends Controller {
                         $sec['error'] = $e->getMessage();
                     }
                 }
+                
+                if ($sec['tipo'] === 'grid_promociones' && !empty($sec['config']['coleccion_slug'])) {
+                    $col_slug = preg_replace('/[^a-zA-Z0-9-_]/', '', $sec['config']['coleccion_slug']);
+                    $limite = max(1, intval($sec['config']['limite_mostrar'] ?? 6));
+                    $hoy = date('Y-m-d');
+                    try {
+                        $promos = $db->query("
+                            SELECT p.* FROM promociones p
+                            JOIN tienda_coleccion_promociones tcp ON p.id = tcp.promocion_id
+                            JOIN tienda_colecciones tc ON tcp.coleccion_id = tc.id
+                            WHERE p.estado = 'activo' AND tc.slug = '$col_slug' 
+                            AND (p.fecha_inicio IS NULL OR p.fecha_inicio <= '$hoy')
+                            AND (p.fecha_fin IS NULL OR p.fecha_fin >= '$hoy')
+                            ORDER BY p.id DESC LIMIT $limite
+                        ")->fetchAll(PDO::FETCH_ASSOC);
+                        
+                        // Extraer imágenes y nombres de los productos incluidos en la promoción
+                        foreach ($promos as &$promo) {
+                            $promo['productos_incluidos'] = [];
+                            if (!empty($promo['productos_requeridos'])) {
+                                $req_ids = json_decode($promo['productos_requeridos'], true);
+                                if (is_array($req_ids) && count($req_ids) > 0) {
+                                    $placeholders = implode(',', array_fill(0, count($req_ids), '?'));
+                                    $stmtReq = $db->prepare("
+                                        SELECT id, nombre, 
+                                            (SELECT ruta FROM inventario_imagenes img WHERE img.producto_id = inventario.id ORDER BY es_principal DESC, img.id ASC LIMIT 1) as imagen 
+                                        FROM inventario 
+                                        WHERE id IN ($placeholders)
+                                    ");
+                                    $stmtReq->execute($req_ids);
+                                    $promo['productos_incluidos'] = $stmtReq->fetchAll(PDO::FETCH_ASSOC);
+                                }
+                            }
+                        }
+                        unset($promo);
+                        $sec['promociones'] = $promos;
+                    } catch (\PDOException $e) { $sec['promociones'] = []; }
+                }
                 $data['secciones'][] = $sec;
             }
         } catch (\PDOException $e) {}

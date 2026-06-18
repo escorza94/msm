@@ -16,6 +16,7 @@
                     <a href="<?= base_url("pagina_web/constructor/seccion?pagina_id={$pagina['id']}&tipo=tarjetas_info") ?>" class="block px-4 py-3 text-sm text-gray-700 hover:bg-indigo-50 border-b border-gray-50"><i class="fas fa-info-circle text-blue-400 w-6"></i> Tarjetas de Información</a>
                     <a href="<?= base_url("pagina_web/constructor/seccion?pagina_id={$pagina['id']}&tipo=texto_libre") ?>" class="block px-4 py-3 text-sm text-gray-700 hover:bg-indigo-50"><i class="fas fa-align-left text-gray-400 w-6"></i> Bloque de Texto Libre</a>
                     <a href="<?= base_url("pagina_web/constructor/seccion?pagina_id={$pagina['id']}&tipo=imagen_texto") ?>" class="block px-4 py-3 text-sm text-gray-700 hover:bg-indigo-50"><i class="fas fa-id-card text-purple-400 w-6"></i> Imagen con Texto</a>
+                    <a href="<?= base_url("pagina_web/constructor/seccion?pagina_id={$pagina['id']}&tipo=grid_promociones") ?>" class="block px-4 py-3 text-sm text-gray-700 hover:bg-indigo-50"><i class="fas fa-tags text-pink-400 w-6"></i> Grid de Promociones</a>
                 </div>
             </div>
             <a href="<?= base_url('pagina_web/paginas') ?>" class="px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition font-medium text-sm flex items-center">
@@ -49,6 +50,7 @@
                                 <?php elseif($sec['tipo'] === 'grid_productos'): ?><i class="fas fa-th text-green-500"></i>
                                 <?php elseif($sec['tipo'] === 'tarjetas_info'): ?><i class="fas fa-info-circle text-blue-500"></i>
                                 <?php elseif($sec['tipo'] === 'imagen_texto'): ?><i class="fas fa-id-card text-purple-500"></i>
+                                <?php elseif($sec['tipo'] === 'grid_promociones'): ?><i class="fas fa-tags text-pink-500"></i>
                                 <?php else: ?><i class="fas fa-align-left text-gray-500"></i><?php endif; ?>
                             </div>
                             <div>

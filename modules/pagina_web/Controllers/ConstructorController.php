@@ -47,13 +47,15 @@ class ConstructorController extends Controller {
             }
         }
         
-        $colecciones = $db->query("SELECT slug, nombre FROM tienda_colecciones WHERE estado = 'activo' ORDER BY nombre ASC")->fetchAll();
+        $colecciones_productos = $db->query("SELECT slug, nombre FROM tienda_colecciones WHERE estado = 'activo' AND tipo = 'productos' ORDER BY nombre ASC")->fetchAll();
+        $colecciones_promociones = $db->query("SELECT slug, nombre FROM tienda_colecciones WHERE estado = 'activo' AND tipo = 'promociones' ORDER BY nombre ASC")->fetchAll();
         
         $this->render('pagina_web', 'admin/constructor/form_seccion', [
             'titulo' => $id > 0 ? 'Editar Sección' : 'Nueva Sección',
             'seccion' => $seccion,
             'tipo' => $tipo,
-            'colecciones' => $colecciones,
+            'colecciones_productos' => $colecciones_productos,
+            'colecciones_promociones' => $colecciones_promociones,
             'pagina_id' => $pagina_id
         ]);
     }
@@ -119,17 +121,17 @@ class ConstructorController extends Controller {
             
             $tarjetas = [];
             for ($i = 0; $i < count($titulos); $i++) {
-                if(!empty($titulos[$i])) $tarjetas[] = ['titulo' => sanitize($titulos[$i]), 'icono' => sanitize($iconos[$i]), 'descripcion' => sanitize($descripciones[$i])];
+                if(!empty($titulos[$i])) $tarjetas[] = ['titulo' => sanitize($titulos[$i]), 'icono' => sanitize($iconos[$i]), 'descripcion' => trim($descripciones[$i])];
             }
             $config['tarjetas'] = $tarjetas;
         }
         elseif ($tipo === 'texto_libre') {
             $config['titulo_seccion'] = sanitize($_POST['titulo_seccion'] ?? '');
-            $config['contenido'] = sanitize($_POST['contenido'] ?? '');
+            $config['contenido'] = trim($_POST['contenido'] ?? '');
         }
         elseif ($tipo === 'imagen_texto') {
             $config['titulo_seccion'] = sanitize($_POST['titulo_seccion'] ?? '');
-            $config['contenido'] = sanitize($_POST['contenido'] ?? '');
+            $config['contenido'] = trim($_POST['contenido'] ?? '');
             $config['posicion_imagen'] = sanitize($_POST['posicion_imagen'] ?? 'izquierda');
             
             $img_path = $_POST['imagen_existente'] ?? '';
@@ -146,6 +148,12 @@ class ConstructorController extends Controller {
                 }
             }
             $config['imagen'] = $img_path;
+        }
+        elseif ($tipo === 'grid_promociones') {
+            $config['titulo_seccion'] = sanitize($_POST['titulo_seccion'] ?? '');
+            $config['subtitulo'] = sanitize($_POST['subtitulo'] ?? '');
+            $config['coleccion_slug'] = sanitize($_POST['coleccion_slug'] ?? '');
+            $config['limite_mostrar'] = intval($_POST['limite_mostrar'] ?? 6);
         }
 
         $json_config = json_encode($config, JSON_UNESCAPED_UNICODE);

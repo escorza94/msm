@@ -67,7 +67,7 @@
                         <label class="block text-xs font-bold text-gray-500 uppercase mb-1">¿Qué colección mostrar?</label>
                         <select name="coleccion_slug" required class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none bg-white">
                             <option value="">-- Selecciona una --</option>
-                            <?php foreach($colecciones as $col): ?>
+                            <?php foreach($colecciones_productos ?? [] as $col): ?>
                                 <option value="<?= $col['slug'] ?>" <?= ($seccion['config']['coleccion_slug'] ?? '') === $col['slug'] ? 'selected' : '' ?>><?= htmlspecialchars($col['nombre']) ?></option>
                             <?php endforeach; ?>
                         </select>
@@ -159,6 +159,33 @@
                 <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Texto o Párrafos</label>
                     <textarea name="contenido" rows="6" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none"><?= htmlspecialchars($seccion['config']['contenido'] ?? '') ?></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <!-- DINÁMICO: Grid Promociones -->
+        <?php elseif ($tipo === 'grid_promociones'): ?>
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <h3 class="font-bold text-gray-800 mb-4 border-b border-gray-100 pb-2"><i class="fas fa-tags text-pink-500 mr-2"></i> Colección de Promociones</h3>
+            <div class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Título de la Sección</label><input type="text" name="titulo_seccion" value="<?= htmlspecialchars($seccion['config']['titulo_seccion'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none" placeholder="Ej. Promociones Calientes"></div>
+                    <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Subtítulo (Opcional)</label><input type="text" name="subtitulo" value="<?= htmlspecialchars($seccion['config']['subtitulo'] ?? '') ?>" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none" placeholder="Ej. Aprovecha estos descuentos"></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">¿Qué colección de promociones mostrar?</label>
+                        <select name="coleccion_slug" required class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none bg-white">
+                            <option value="">-- Selecciona una --</option>
+                            <?php foreach($colecciones_promociones ?? [] as $col): ?>
+                                <option value="<?= $col['slug'] ?>" <?= ($seccion['config']['coleccion_slug'] ?? '') === $col['slug'] ? 'selected' : '' ?>><?= htmlspecialchars($col['nombre']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Límite de Promos a mostrar</label>
+                        <input type="number" name="limite_mostrar" value="<?= intval($seccion['config']['limite_mostrar'] ?? 6) ?>" min="1" max="24" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none">
+                    </div>
                 </div>
             </div>
         </div>
