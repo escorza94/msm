@@ -10,8 +10,11 @@ return [
     'GEMINI_MODEL' => 'gemini-3.5-flash',
     'APP_NAME' => 'Mueblería San Martínes',
     'BUSINESS_LOGO' => 'storage/assets/logo_6a2ae31211305.png',
-    'THEME_SIDEBAR_BG' => '#242424',
-    'THEME_PRIMARY' => '#4cdbe6',
-    'seo_titulo'=> ' hola'
-   
+    'THEME_SIDEBAR_BG' => '#f5f5f5',
+    'THEME_PRIMARY' => '#9c67fe',
+    'seo_titulo' => ' hola',
+    'THEME_SIDEBAR_TEXT' => '#454545',
+    'THEME_TEXT_COLOR' => '#374151',
+    'THEME_TOPBAR_BG' => '#ffffff',
+    'THEME_BODY_BG' => '#f3f4f6',
 ];

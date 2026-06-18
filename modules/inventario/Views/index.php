@@ -5,6 +5,9 @@
             <p class="text-sm text-gray-500 mt-1">Gestión de productos, stock y precios</p>
         </div>
         <div class="flex items-center gap-3">
+            <a href="<?= base_url('inventario/categorias') ?>" class="px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 font-medium transition text-sm flex items-center shadow-sm">
+                <i class="fas fa-tags mr-2"></i> Categorías
+            </a>
             <a href="<?= base_url('inventario/nuevo') ?>" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition text-sm flex items-center shadow-md">
                 <i class="fas fa-plus mr-2"></i> Nuevo Producto
             </a>

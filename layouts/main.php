@@ -13,22 +13,44 @@
     $sysAppName = 'AED Core';
     $sysBusinessLogo = '';
     $themeSidebarBg = '#111827';
+    $themeSidebarText = '#ffffff';
     $themePrimary = '#4f46e5';
+    $themeTextColor = '#374151';
+    $themeTopbarBg = '#ffffff';
+    $themeBodyBg = '#f3f4f6';
     if (file_exists(BASE_PATH . '/config.php')) {
         $sysConfigGlobal = require BASE_PATH . '/config.php';
         $sysAppName = $sysConfigGlobal['APP_NAME'] ?? 'AED Core';
         $sysBusinessLogo = $sysConfigGlobal['BUSINESS_LOGO'] ?? '';
         $themeSidebarBg = $sysConfigGlobal['THEME_SIDEBAR_BG'] ?? '#111827';
+        $themeSidebarText = $sysConfigGlobal['THEME_SIDEBAR_TEXT'] ?? '#ffffff';
         $themePrimary = $sysConfigGlobal['THEME_PRIMARY'] ?? '#4f46e5';
+        $themeTextColor = $sysConfigGlobal['THEME_TEXT_COLOR'] ?? '#374151';
+        $themeTopbarBg = $sysConfigGlobal['THEME_TOPBAR_BG'] ?? '#ffffff';
+        $themeBodyBg = $sysConfigGlobal['THEME_BODY_BG'] ?? '#f3f4f6';
     }
     ?>
     <style>
-        :root { --theme-sidebar-bg: <?= htmlspecialchars($themeSidebarBg) ?>; --theme-primary: <?= htmlspecialchars($themePrimary) ?>; }
+        :root { 
+            --theme-sidebar-bg: <?= htmlspecialchars($themeSidebarBg) ?>; 
+            --theme-sidebar-text: <?= htmlspecialchars($themeSidebarText) ?>; 
+            --theme-primary: <?= htmlspecialchars($themePrimary) ?>; 
+            --theme-text-color: <?= htmlspecialchars($themeTextColor) ?>; 
+            --theme-topbar-bg: <?= htmlspecialchars($themeTopbarBg) ?>; 
+            --theme-body-bg: <?= htmlspecialchars($themeBodyBg) ?>; 
+        }
         .bg-custom-sidebar { background-color: var(--theme-sidebar-bg) !important; }
+        .text-custom-sidebar { color: var(--theme-sidebar-text) !important; }
+        .text-custom-sidebar-muted { color: var(--theme-sidebar-text) !important; opacity: 0.7; }
+        .text-custom-sidebar-title { color: var(--theme-sidebar-text) !important; opacity: 0.4; }
         .text-custom-primary { color: var(--theme-primary) !important; }
-        .border-custom-sidebar { border-color: rgba(255,255,255,0.05) !important; }
-        .hover-custom-sidebar:hover { background-color: rgba(255,255,255,0.1) !important; }
+        .border-custom-sidebar { border-color: color-mix(in srgb, var(--theme-sidebar-text) 10%, transparent) !important; }
+        .hover-custom-sidebar:hover { background-color: color-mix(in srgb, var(--theme-sidebar-text) 10%, transparent) !important; opacity: 1 !important; color: var(--theme-sidebar-text) !important; }
         
+        .bg-custom-body { background-color: var(--theme-body-bg) !important; }
+        .text-custom-body { color: var(--theme-text-color) !important; }
+        .bg-custom-topbar { background-color: var(--theme-topbar-bg) !important; }
+
         /* Estilos Markdown para el Copiloto IA */
         .markdown-body p { margin-bottom: 0.5rem; }
         .markdown-body ul { list-style-type: disc; padding-left: 1.25rem; margin-bottom: 0.5rem; }
@@ -75,20 +97,20 @@
                         <h1 class="text-xl font-bold tracking-wider truncate flex items-center justify-center w-full"><i class="fas fa-cube text-custom-primary md:mr-2 sidebar-icon-margin"></i> <span class="sidebar-text"><?= htmlspecialchars($sysAppName) ?></span></h1>
                     <?php endif; ?>
                 </a>
-                <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+                <button onclick="toggleSidebar()" class="md:hidden text-custom-sidebar-muted hover:text-custom-sidebar transition"><i class="fas fa-times text-xl"></i></button>
             </div>
             <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto custom-scrollbar">
                 
                 <!-- Principal -->
-                <p class="px-4 text-[10px] font-bold tracking-wider text-white/40 uppercase mt-2 mb-2 sidebar-text">Principal</p>
-                <hr class="border-white/10 mx-4 mt-2 mb-2 hidden sidebar-divider">
-                <a href="<?= base_url('dashboard') ?>" class="flex items-center px-4 py-2.5 text-sm text-gray-300 hover-custom-sidebar hover:text-white rounded-lg transition-colors group sidebar-link" title="Dashboard">
+                <p class="px-4 text-[10px] font-bold tracking-wider text-custom-sidebar-title uppercase mt-2 mb-2 sidebar-text">Principal</p>
+                <hr class="border-custom-sidebar mx-4 mt-2 mb-2 hidden sidebar-divider">
+                <a href="<?= base_url('dashboard') ?>" class="flex items-center px-4 py-2.5 text-sm text-custom-sidebar-muted hover-custom-sidebar rounded-lg transition-colors group sidebar-link" title="Dashboard">
                     <i class="fas fa-chart-pie w-6 text-center text-custom-primary"></i> <span class="sidebar-text ml-2">Dashboard</span>
                 </a>
 
                 <!-- Módulos de Operación -->
-                <p class="px-4 text-[10px] font-bold tracking-wider text-white/40 uppercase mt-6 mb-2 sidebar-text">Operación</p>
-                <hr class="border-white/10 mx-4 mt-6 mb-2 hidden sidebar-divider">
+                <p class="px-4 text-[10px] font-bold tracking-wider text-custom-sidebar-title uppercase mt-6 mb-2 sidebar-text">Operación</p>
+                <hr class="border-custom-sidebar mx-4 mt-6 mb-2 hidden sidebar-divider">
                 <?php
                 if (is_dir(MODULES_PATH)) {
                     foreach (scandir(MODULES_PATH) as $dir) {
@@ -102,8 +124,9 @@
                                 if (has_permission($permisoRequerido)) {
                                     $menuName = ucfirst($config['name']);
                                     $menuUrl = base_url($config['name']);
-                                    $menuIcon = $config['icon'] ?? 'fa-folder text-white/50';
-                                    echo '<a href="' . $menuUrl . '" class="flex items-center px-4 py-2.5 text-sm text-gray-300 hover-custom-sidebar hover:text-white rounded-lg transition-colors group sidebar-link" title="' . $menuName . '"><i class="fas ' . htmlspecialchars($menuIcon) . ' w-6 text-center group-hover:text-white transition-colors"></i> <span class="sidebar-text ml-2">' . $menuName . '</span></a>';
+                                    $menuIcon = $config['icon'] ?? 'fa-folder';
+                                    $menuIcon = str_replace([' text-white/50', ' text-gray-400'], '', $menuIcon);
+                                    echo '<a href="' . $menuUrl . '" class="flex items-center px-4 py-2.5 text-sm text-custom-sidebar-muted hover-custom-sidebar rounded-lg transition-colors group sidebar-link" title="' . $menuName . '"><i class="fas ' . htmlspecialchars($menuIcon) . ' w-6 text-center transition-colors"></i> <span class="sidebar-text ml-2">' . $menuName . '</span></a>';
                                 }
                             }
                         }
@@ -113,41 +136,41 @@
 
                 <!-- Administración y Ajustes -->
                 <?php if(has_permission('admin_core.ver') || has_permission('usuarios.ver')): ?>
-                    <p class="px-4 text-[10px] font-bold tracking-wider text-white/40 uppercase mt-6 mb-2 sidebar-text">Administración</p>
-                    <hr class="border-white/10 mx-4 mt-6 mb-2 hidden sidebar-divider">
+                    <p class="px-4 text-[10px] font-bold tracking-wider text-custom-sidebar-title uppercase mt-6 mb-2 sidebar-text">Administración</p>
+                    <hr class="border-custom-sidebar mx-4 mt-6 mb-2 hidden sidebar-divider">
                     <?php if(has_permission('admin_core.ver')): ?>
-                        <a href="<?= base_url('admin_core') ?>" class="flex items-center px-4 py-2.5 text-sm text-gray-300 hover-custom-sidebar hover:text-white rounded-lg transition-colors group sidebar-link" title="Panel Core"><i class="fas fa-server w-6 text-center text-white/50 group-hover:text-white transition-colors"></i> <span class="sidebar-text ml-2">Panel Core</span></a>
+                        <a href="<?= base_url('admin_core') ?>" class="flex items-center px-4 py-2.5 text-sm text-custom-sidebar-muted hover-custom-sidebar rounded-lg transition-colors group sidebar-link" title="Panel Core"><i class="fas fa-server w-6 text-center transition-colors"></i> <span class="sidebar-text ml-2">Panel Core</span></a>
                     <?php endif; ?>
                     <?php if(has_permission('usuarios.ver')): ?>
-                        <a href="<?= base_url('usuarios') ?>" class="flex items-center px-4 py-2.5 text-sm text-gray-300 hover-custom-sidebar hover:text-white rounded-lg transition-colors group sidebar-link" title="Usuarios"><i class="fas fa-users w-6 text-center text-white/50 group-hover:text-white transition-colors"></i> <span class="sidebar-text ml-2">Usuarios</span></a>
+                        <a href="<?= base_url('usuarios') ?>" class="flex items-center px-4 py-2.5 text-sm text-custom-sidebar-muted hover-custom-sidebar rounded-lg transition-colors group sidebar-link" title="Usuarios"><i class="fas fa-users w-6 text-center transition-colors"></i> <span class="sidebar-text ml-2">Usuarios</span></a>
                     <?php endif; ?>
                     <?php if(has_permission('admin_core.ver')): ?>
-                        <a href="<?= base_url('admin_core/ajustes') ?>" class="flex items-center px-4 py-2.5 text-sm text-gray-300 hover-custom-sidebar hover:text-white rounded-lg transition-colors group sidebar-link" title="Ajustes de Sistema"><i class="fas fa-cogs w-6 text-center text-white/50 group-hover:text-white transition-colors"></i> <span class="sidebar-text ml-2">Ajustes de Sistema</span></a>
+                        <a href="<?= base_url('admin_core/ajustes') ?>" class="flex items-center px-4 py-2.5 text-sm text-custom-sidebar-muted hover-custom-sidebar rounded-lg transition-colors group sidebar-link" title="Ajustes de Sistema"><i class="fas fa-cogs w-6 text-center transition-colors"></i> <span class="sidebar-text ml-2">Ajustes de Sistema</span></a>
                     <?php endif; ?>
                 <?php endif; ?>
             </nav>
             <div class="p-4 border-t border-custom-sidebar sidebar-footer">
-                <a href="<?= base_url('usuarios/perfil') ?>" class="flex items-center text-sm text-gray-400 hover:text-white transition-colors mb-4 sidebar-link group" title="Mi Perfil">
-                    <i class="fas fa-user-circle w-6 text-center text-lg group-hover:text-white transition-colors"></i> <span class="sidebar-text ml-2 truncate">Mi Perfil (<?= htmlspecialchars($_SESSION['user_name'] ?? 'Usuario') ?>)</span>
+                <a href="<?= base_url('usuarios/perfil') ?>" class="flex items-center text-sm text-custom-sidebar-muted hover:text-custom-sidebar transition-colors mb-4 sidebar-link group" title="Mi Perfil">
+                    <i class="fas fa-user-circle w-6 text-center text-lg transition-colors"></i> <span class="sidebar-text ml-2 truncate">Mi Perfil (<?= htmlspecialchars($_SESSION['user_name'] ?? 'Usuario') ?>)</span>
                 </a>
                 <a href="<?= base_url('usuarios/logout') ?>" class="flex items-center text-sm text-red-400 hover:text-red-300 transition-colors sidebar-link group" title="Cerrar Sesión">
                     <i class="fas fa-sign-out-alt w-6 text-center text-lg group-hover:text-red-300 transition-colors"></i> <span class="sidebar-text ml-2">Cerrar Sesión</span>
                 </a>
             </div>
         </aside>
-        <main class="flex-1 flex flex-col overflow-hidden bg-gray-50">
-            <header class="h-16 bg-white shadow-sm flex items-center justify-between px-4 md:px-8 z-10">
+        <main class="flex-1 flex flex-col overflow-hidden bg-custom-body text-custom-body">
+            <header class="h-16 bg-custom-topbar shadow-sm flex items-center justify-between px-4 md:px-8 z-10">
                 <div class="flex items-center min-w-0">
-                    <button onclick="toggleSidebar()" class="text-gray-500 hover:text-blue-600 focus:outline-none mr-3" title="Alternar menú">
+                    <button onclick="toggleSidebar()" class="text-custom-body opacity-70 hover:opacity-100 hover:text-custom-primary focus:outline-none mr-3 transition" title="Alternar menú">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
-                    <h2 class="text-lg md:text-xl font-semibold text-gray-700 truncate"><?= $titulo ?? 'Sistema' ?></h2>
+                    <h2 class="text-lg md:text-xl font-semibold text-custom-body truncate"><?= $titulo ?? 'Sistema' ?></h2>
                 </div>
 
                 <div class="flex items-center gap-4">
                     <!-- Notificaciones -->
                     <div class="relative">
-                        <button onclick="toggleNotificaciones()" class="text-gray-500 hover:text-indigo-600 focus:outline-none relative transition-colors mt-1">
+                        <button onclick="toggleNotificaciones()" class="text-custom-body opacity-70 hover:opacity-100 hover:text-custom-primary focus:outline-none relative transition-colors mt-1">
                             <i class="fas fa-bell text-xl"></i>
                             <span id="notif-badge" class="hidden absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow border-2 border-white">0</span>
                         </button>

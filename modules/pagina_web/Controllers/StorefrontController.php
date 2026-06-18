@@ -51,8 +51,15 @@ class StorefrontController extends Controller {
         // 2. Información de la página actual
         try {
             $pagina_db = $db->query("SELECT * FROM tienda_paginas WHERE slug = '$slug' AND estado = 'publicado'")->fetch();
+            
             if (!$pagina_db) {
-                die("<div style='font-family:sans-serif; text-align:center; padding:100px;'><h2 style='font-size:40px; color:#555;'>Error 404</h2><p>La página que buscas no existe o se encuentra desactivada.</p></div>");
+                // Intentar buscar la página dinámica 404 creada desde el Panel
+                $pagina_db = $db->query("SELECT * FROM tienda_paginas WHERE slug = '404' AND estado = 'publicado'")->fetch();
+                http_response_code(404); // Importante para el SEO de Google
+                
+                if (!$pagina_db) {
+                    die("<div style='font-family:sans-serif; text-align:center; padding:100px; background:#f9fafb; min-height:100vh;'><h2 style='font-size:40px; color:#4f46e5; margin-bottom:10px;'>Error 404</h2><p style='color:#6b7280; font-size:18px;'>La página que buscas no existe.</p><br><p style='color:#9ca3af; font-size:14px;'><i>Tip para Admin: Ve a 'Panel de Tienda > Páginas', crea una nueva con el slug <b>404</b> y diséñala en el Constructor Visual.</i></p></div>");
+                }
             }
             $nombre_empresa = $data['config']['nombre_empresa'] ?? 'Mueblería San Martín';
             $data['titulo'] = htmlspecialchars($pagina_db['titulo']) . ' | ' . htmlspecialchars($nombre_empresa);

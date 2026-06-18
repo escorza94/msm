@@ -1,12 +1,4 @@
 <div class="max-w-4xl mx-auto mt-6 mb-10">
-    <div class="flex justify-between items-center mb-6 bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-        <div>
-            <h2 class="text-2xl font-bold text-gray-800 flex items-center"><i class="fas fa-paint-roller text-amber-500 mr-3"></i> Configuración Global</h2>
-            <p class="text-sm text-gray-500 mt-1">Ajusta los textos, redes sociales y SEO de tu Tienda Online.</p>
-        </div>
-        <a href="<?= base_url('pagina_web') ?>" class="text-sm bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition flex items-center"><i class="fas fa-arrow-left mr-2"></i> Volver al Panel</a>
-    </div>
-
     <?php if(isset($_GET['success'])): ?>
         <div class="mb-6 p-4 bg-green-50 border border-green-100 text-green-700 rounded-xl flex items-center shadow-sm text-sm">
             <i class="fas fa-check-circle text-lg mr-3"></i> <div><?= htmlspecialchars($_GET['success']) ?></div>
@@ -18,8 +10,17 @@
         </div>
     <?php endif; ?>
 
-    <form action="<?= base_url('pagina_web/configuracion/guardar') ?>" method="POST" class="space-y-6">
-        
+    <form id="config-form" action="<?= base_url('pagina_web/configuracion/guardar') ?>" method="POST" class="space-y-6">
+        <div class="flex justify-between items-center mb-6 bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800 flex items-center"><i class="fas fa-paint-roller text-amber-500 mr-3"></i> Configuración Global</h2>
+                <p class="text-sm text-gray-500 mt-1">Ajusta los textos, redes sociales y SEO de tu Tienda Online.</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="<?= base_url('pagina_web') ?>" class="text-sm bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition flex items-center"><i class="fas fa-arrow-left mr-2"></i> Volver</a>
+                <button type="submit" class="px-4 py-1.5 bg-amber-500 text-white rounded-lg shadow-sm font-bold hover:bg-amber-600 transition flex items-center text-sm"><i class="fas fa-save mr-2"></i> Guardar Cambios</button>
+            </div>
+        </div>
         <!-- Identidad y Diseño -->
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <h3 class="font-bold text-gray-800 mb-4 border-b border-gray-100 pb-2"><i class="fas fa-palette text-indigo-500 mr-2"></i> Identidad y Diseño</h3>
@@ -150,4 +151,61 @@
             <button type="submit" class="px-6 py-2.5 bg-amber-500 text-white rounded-lg shadow font-bold hover:bg-amber-600 transition flex items-center"><i class="fas fa-save mr-2"></i> Guardar Ajustes</button>
         </div>
     </form>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('config-form');
+            let isDirty = false;
+
+            form.addEventListener('input', () => {
+                isDirty = true;
+            });
+
+            form.addEventListener('submit', () => {
+                isDirty = false;
+            });
+
+            // Interceptar clics en enlaces (como el botón Volver o el menú lateral)
+            document.body.addEventListener('click', function(e) {
+                const link = e.target.closest('a');
+                if (!link) return;
+                
+                // Ignorar anclas, javascript void y el mismo lugar
+                const href = link.getAttribute('href');
+                if (!href || href === '#' || href.startsWith('javascript:')) return;
+
+                if (isDirty) {
+                    e.preventDefault(); // Detener la navegación
+                    const targetUrl = link.href;
+                    
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            title: '¿Cambios sin guardar?',
+                            text: "Has modificado la configuración. Si sales ahora, perderás los cambios.",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#3085d6',
+                            confirmButtonText: 'Sí, salir y descartar',
+                            cancelButtonText: 'No, seguir editando'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                isDirty = false;
+                                window.location.href = targetUrl;
+                            }
+                        });
+                    }
+                }
+            });
+
+            // Alerta nativa obligatoria del navegador (solo para recarga (F5) o cerrar pestaña)
+            window.addEventListener('beforeunload', (event) => {
+                if (isDirty) {
+                    event.preventDefault();
+                    event.returnValue = '';
+                }
+            });
+        });
+    </script>
 </div>

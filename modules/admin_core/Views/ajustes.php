@@ -45,7 +45,7 @@
             </div>
 
             <h3 class="text-lg font-bold text-gray-800 border-b border-gray-100 pb-3 pt-2"><i class="fas fa-palette mr-2 text-pink-500"></i> Apariencia y Tema</h3>
-            <div class="bg-pink-50 p-4 rounded-lg border border-pink-100 mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-pink-50 p-4 rounded-lg border border-pink-100 mb-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-sm font-bold text-pink-800 mb-1">Color del Menú Lateral</label>
                     <div class="flex items-center gap-3 mt-2">
@@ -54,10 +54,38 @@
                     </div>
                 </div>
                 <div>
+                    <label class="block text-sm font-bold text-pink-800 mb-1">Texto del Menú Lateral</label>
+                    <div class="flex items-center gap-3 mt-2">
+                        <input type="color" name="theme_sidebar_text" value="<?= htmlspecialchars($config['THEME_SIDEBAR_TEXT'] ?? '#ffffff') ?>" class="h-10 w-16 cursor-pointer rounded border border-pink-200 p-0 shadow-sm outline-none bg-white">
+                        <span class="text-xs text-pink-600">Color de enlaces<br>(Predeterminado: #ffffff)</span>
+                    </div>
+                </div>
+                <div>
                     <label class="block text-sm font-bold text-pink-800 mb-1">Color Primario (Acentos)</label>
                     <div class="flex items-center gap-3 mt-2">
                         <input type="color" name="theme_primary" value="<?= htmlspecialchars($config['THEME_PRIMARY'] ?? '#4f46e5') ?>" class="h-10 w-16 cursor-pointer rounded border border-pink-200 p-0 shadow-sm outline-none bg-white">
                         <span class="text-xs text-pink-600">Iconos y botones<br>(Predeterminado: #4f46e5)</span>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-pink-800 mb-1">Color de Texto Principal</label>
+                    <div class="flex items-center gap-3 mt-2">
+                        <input type="color" name="theme_text_color" value="<?= htmlspecialchars($config['THEME_TEXT_COLOR'] ?? '#374151') ?>" class="h-10 w-16 cursor-pointer rounded border border-pink-200 p-0 shadow-sm outline-none bg-white">
+                        <span class="text-xs text-pink-600">Títulos y párrafos<br>(Predeterminado: #374151)</span>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-pink-800 mb-1">Fondo de la Barra Superior</label>
+                    <div class="flex items-center gap-3 mt-2">
+                        <input type="color" name="theme_topbar_bg" value="<?= htmlspecialchars($config['THEME_TOPBAR_BG'] ?? '#ffffff') ?>" class="h-10 w-16 cursor-pointer rounded border border-pink-200 p-0 shadow-sm outline-none bg-white">
+                        <span class="text-xs text-pink-600">Header principal<br>(Predeterminado: #ffffff)</span>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-pink-800 mb-1">Fondo del Sistema (Body)</label>
+                    <div class="flex items-center gap-3 mt-2">
+                        <input type="color" name="theme_body_bg" value="<?= htmlspecialchars($config['THEME_BODY_BG'] ?? '#f3f4f6') ?>" class="h-10 w-16 cursor-pointer rounded border border-pink-200 p-0 shadow-sm outline-none bg-white">
+                        <span class="text-xs text-pink-600">Fondo general<br>(Predeterminado: #f3f4f6)</span>
                     </div>
                 </div>
             </div>

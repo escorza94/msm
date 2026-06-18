@@ -22,6 +22,10 @@ class AjustesController extends Controller {
         $config['APP_NAME'] = sanitize($_POST['app_name'] ?? $config['APP_NAME'] ?? 'Mueblería San Martín');
         $config['THEME_SIDEBAR_BG'] = sanitize($_POST['theme_sidebar_bg'] ?? $config['THEME_SIDEBAR_BG'] ?? '#111827');
         $config['THEME_PRIMARY'] = sanitize($_POST['theme_primary'] ?? $config['THEME_PRIMARY'] ?? '#4f46e5');
+        $config['THEME_SIDEBAR_TEXT'] = sanitize($_POST['theme_sidebar_text'] ?? $config['THEME_SIDEBAR_TEXT'] ?? '#ffffff');
+        $config['THEME_TEXT_COLOR'] = sanitize($_POST['theme_text_color'] ?? $config['THEME_TEXT_COLOR'] ?? '#374151');
+        $config['THEME_TOPBAR_BG'] = sanitize($_POST['theme_topbar_bg'] ?? $config['THEME_TOPBAR_BG'] ?? '#ffffff');
+        $config['THEME_BODY_BG'] = sanitize($_POST['theme_body_bg'] ?? $config['THEME_BODY_BG'] ?? '#f3f4f6');
         
         $storage_dir = BASE_PATH . '/storage/assets';
         if (!is_dir($storage_dir)) @mkdir($storage_dir, 0777, true);
