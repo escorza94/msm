@@ -2,9 +2,16 @@
     "name": "pagina_web",
     "version": "1.0.0",
     "active": true,
-    "description": "",
+    "description": "Gestor de Tienda Online y CMS",
     "icon": "fa-store",
-    "permissions": [   {"name": "pagina_web.ver", "description": "Acceder al panel del Gestor de la Tienda Online"},
-        {"name": "pagina_web.crear", "description": "Crear, modificar y diseñar páginas o colecciones web"}
-   ]
+    "permissions": [
+        {
+            "name": "pagina_web.ver",
+            "description": "Acceder al panel del Gestor de la Tienda Online"
+        },
+        {
+            "name": "pagina_web.crear",
+            "description": "Crear, modificar y diseñar páginas o colecciones web"
+        }
+    ]
 }
