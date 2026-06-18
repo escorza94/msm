@@ -6,9 +6,11 @@
         </div>
         <div class="flex items-center gap-3">
             <a href="<?= base_url('pagina_web') ?>" class="text-sm bg-white border border-gray-200 text-gray-600 px-3 py-2 rounded-lg font-medium hover:bg-gray-50 transition flex items-center shadow-sm"><i class="fas fa-arrow-left mr-2"></i> Panel</a>
+            <?php if(has_permission('pagina_web.crear')): ?>
             <button onclick="abrirModalPagina()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold transition text-sm flex items-center shadow-md">
                 <i class="fas fa-plus mr-2"></i> Nueva Página
             </button>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -31,15 +33,21 @@
                         <td class="p-4 font-bold text-gray-800"><?= htmlspecialchars($p['titulo']) ?></td>
                         <td class="p-4 font-mono text-blue-500 text-xs"><a href="<?= $p['slug'] === 'inicio' ? base_url() : base_url('pagina?slug=' . $p['slug']) ?>" target="_blank" class="hover:underline">/<?= htmlspecialchars($p['slug']) ?> <i class="fas fa-external-link-alt text-[10px] ml-1"></i></a></td>
                         <td class="p-4 text-center">
+                            <?php if(has_permission('pagina_web.crear')): ?>
                             <a href="<?= base_url('pagina_web/paginas/cambiarEstado?id=' . $p['id']) ?>" class="px-2 py-1 rounded text-[10px] uppercase font-bold <?= $p['estado'] === 'publicado' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' ?> hover:opacity-80">
                                 <?= $p['estado'] ?>
                             </a>
+                            <?php else: ?>
+                            <span class="px-2 py-1 rounded text-[10px] uppercase font-bold <?= $p['estado'] === 'publicado' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' ?>"><?= $p['estado'] ?></span>
+                            <?php endif; ?>
                         </td>
                         <td class="p-4 text-center flex items-center justify-center gap-2">
                             <a href="<?= base_url('pagina_web/constructor?pagina_id=' . $p['id']) ?>" class="px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition rounded font-bold text-xs"><i class="fas fa-paint-brush mr-1"></i> Diseñar</a>
+                            <?php if(has_permission('pagina_web.crear')): ?>
                             <button onclick='editarPagina(<?= json_encode($p) ?>)' class="w-8 h-8 rounded bg-gray-50 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition"><i class="fas fa-edit"></i></button>
                             <?php if($p['id'] != 1): ?>
                                 <a href="<?= base_url('pagina_web/paginas/eliminar?id=' . $p['id']) ?>" onclick="return confirm('¿Borrar página?')" class="w-8 h-8 flex items-center justify-center rounded bg-gray-50 text-gray-600 hover:bg-red-50 hover:text-red-600 transition"><i class="fas fa-trash-alt"></i></a>
+                            <?php endif; ?>
                             <?php endif; ?>
                         </td>
                     </tr>

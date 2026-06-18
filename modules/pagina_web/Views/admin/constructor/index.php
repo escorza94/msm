@@ -5,6 +5,7 @@
             <p class="text-sm text-gray-500 mt-1">Editando la página: <span class="font-bold text-gray-800"><?= htmlspecialchars($pagina['titulo']) ?></span></p>
         </div>
         <div class="flex gap-3">
+            <?php if(has_permission('pagina_web.crear')): ?>
             <div class="relative group">
                 <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-sm font-bold hover:bg-indigo-700 transition flex items-center text-sm">
                     <i class="fas fa-plus mr-2"></i> Añadir Widget
@@ -19,6 +20,7 @@
                     <a href="<?= base_url("pagina_web/constructor/seccion?pagina_id={$pagina['id']}&tipo=grid_promociones") ?>" class="block px-4 py-3 text-sm text-gray-700 hover:bg-indigo-50"><i class="fas fa-tags text-pink-400 w-6"></i> Grid de Promociones</a>
                 </div>
             </div>
+            <?php endif; ?>
             <a href="<?= base_url('pagina_web/paginas') ?>" class="px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition font-medium text-sm flex items-center">
                 <i class="fas fa-arrow-left mr-2"></i> Volver
             </a>
@@ -58,10 +60,12 @@
                                 <p class="text-[10px] uppercase font-bold text-gray-400 tracking-wider"><?= str_replace('_', ' ', $sec['tipo']) ?> &bull; <span class="<?= $sec['estado'] === 'activo' ? 'text-green-500' : 'text-red-500' ?>"><?= $sec['estado'] ?></span></p>
                             </div>
                         </div>
+                        <?php if(has_permission('pagina_web.crear')): ?>
                         <div class="flex items-center gap-2 opacity-50 group-hover:opacity-100 transition">
                             <a href="<?= base_url("pagina_web/constructor/seccion?id={$sec['id']}&pagina_id={$pagina['id']}&tipo={$sec['tipo']}") ?>" class="w-8 h-8 flex items-center justify-center rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100" title="Editar"><i class="fas fa-edit"></i></a>
                             <a href="<?= base_url("pagina_web/constructor/eliminarSeccion?id={$sec['id']}&pagina_id={$pagina['id']}") ?>" onclick="return confirm('¿Seguro que deseas eliminar esta sección?')" class="w-8 h-8 flex items-center justify-center rounded-md bg-red-50 text-red-600 hover:bg-red-100" title="Eliminar"><i class="fas fa-trash-alt"></i></a>
                         </div>
+                        <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -72,6 +76,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
+    <?php if(has_permission('pagina_web.crear')): ?>
     document.addEventListener('DOMContentLoaded', function() {
         const el = document.getElementById('lista-secciones');
         if (el) {
@@ -81,4 +86,5 @@
             }});
         }
     });
+    <?php endif; ?>
 </script>

@@ -2,5 +2,9 @@
     "name": "inventario",
     "version": "1.0",
     "active": true,
-    "icon": "fa-boxes text-blue-500"
+    "icon": "fa-boxes text-blue-500",
+    "permissions": [
+        {"name": "inventario.ver", "description": "Ver el catálogo de productos e inventario"},
+        {"name": "inventario.crear", "description": "Crear, editar y eliminar productos del inventario"}
+    ]
 }

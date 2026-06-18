@@ -3,6 +3,7 @@
 class InventarioController extends Controller {
     public function index() {
         auth_require(); // Proteger ruta
+        require_permission('inventario.ver');
         
         $db = Database::getInstance();
         try {
@@ -19,6 +20,7 @@ class InventarioController extends Controller {
 
     public function nuevo() {
         auth_require();
+        require_permission('inventario.crear');
         $error = $_GET['error'] ?? null;
         
         $db = Database::getInstance();
@@ -35,6 +37,7 @@ class InventarioController extends Controller {
 
     public function postNuevo() {
         auth_require();
+        require_permission('inventario.crear');
         
         $sku = sanitize($_POST['sku'] ?? '');
         $nombre = sanitize($_POST['nombre'] ?? '');
@@ -103,6 +106,7 @@ class InventarioController extends Controller {
 
     public function ver() {
         auth_require();
+        require_permission('inventario.ver');
         $id = intval($_GET['id'] ?? 0);
         
         if (!$id) redirect(base_url('inventario?error=Producto no especificado'));
@@ -134,6 +138,7 @@ class InventarioController extends Controller {
 
     public function editar() {
         auth_require();
+        require_permission('inventario.crear');
         $id = intval($_GET['id'] ?? 0);
         $error = $_GET['error'] ?? null;
         
@@ -166,6 +171,7 @@ class InventarioController extends Controller {
 
     public function postEditar() {
         auth_require();
+        require_permission('inventario.crear');
         
         $id = intval($_POST['id'] ?? 0);
         if (!$id) redirect(base_url('inventario?error=Producto no especificado'));

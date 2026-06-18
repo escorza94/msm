@@ -4,5 +4,7 @@
     "active": true,
     "description": "",
     "icon": "fa-store",
-    "permissions": []
+    "permissions": [   {"name": "pagina_web.ver", "description": "Acceder al panel del Gestor de la Tienda Online"},
+        {"name": "pagina_web.crear", "description": "Crear, modificar y diseñar páginas o colecciones web"}
+   ]
 }

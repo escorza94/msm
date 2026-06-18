@@ -6,7 +6,9 @@
         </div>
         <div class="flex items-center gap-3">
             <a href="<?= base_url('pagina_web') ?>" class="text-sm bg-white border border-gray-200 text-gray-600 px-3 py-2 rounded-lg font-medium hover:bg-gray-50 transition flex items-center shadow-sm"><i class="fas fa-arrow-left mr-2"></i> Panel</a>
+            <?php if(has_permission('pagina_web.crear')): ?>
             <a href="<?= base_url('pagina_web/colecciones/nuevo') ?>" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-bold transition text-sm flex items-center shadow-md"><i class="fas fa-plus mr-2"></i> Nueva Colección</a>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -41,14 +43,22 @@
                         </td>
                         <td class="p-4 text-center"><span class="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs font-bold"><?= ($c['tipo'] ?? 'productos') === 'productos' ? $c['total_productos_visibles'] : ($c['total_promociones'] ?? 0) ?> items</span></td>
                         <td class="p-4 text-center">
+                            <?php if(has_permission('pagina_web.crear')): ?>
                             <a href="<?= base_url('pagina_web/colecciones/cambiarEstado?id=' . $c['id']) ?>" class="px-2 py-1 rounded text-[10px] uppercase font-bold <?= $c['estado'] === 'activo' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' ?> hover:opacity-80">
                                 <?= $c['estado'] ?>
                             </a>
+                            <?php else: ?>
+                            <span class="px-2 py-1 rounded text-[10px] uppercase font-bold <?= $c['estado'] === 'activo' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' ?>"><?= $c['estado'] ?></span>
+                            <?php endif; ?>
                         </td>
                         <td class="p-4 text-center flex items-center justify-center gap-2">
+                            <?php if(has_permission('pagina_web.crear')): ?>
                             <a href="<?= base_url('pagina_web/colecciones/editar?id=' . $c['id']) ?>" class="w-8 h-8 flex items-center justify-center rounded bg-gray-50 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition"><i class="fas fa-edit"></i></a>
                             <?php if($c['id'] != 1): ?>
                                 <a href="<?= base_url('pagina_web/colecciones/eliminar?id=' . $c['id']) ?>" onclick="return confirm('¿Borrar colección?')" class="w-8 h-8 flex items-center justify-center rounded bg-gray-50 text-gray-600 hover:bg-red-50 hover:text-red-600 transition"><i class="fas fa-trash-alt"></i></a>
+                            <?php endif; ?>
+                            <?php else: ?>
+                                <span class="text-xs text-gray-400">Sin acceso</span>
                             <?php endif; ?>
                         </td>
                     </tr>
