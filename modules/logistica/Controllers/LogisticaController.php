@@ -286,4 +286,79 @@ class LogisticaController extends Controller {
         }
         return ['error' => 'Herramienta no soportada por Logística'];
     }
+
+    // --- HOOKS PARA EL BOT DE WHATSAPP PÚBLICO (CLIENTES) ---
+    public function hookWaBotTools() {
+        return [
+            [
+                'declaration' => [
+                    'name' => 'logistica_cotizar_envio_whatsapp',
+                    'description' => 'Calcula el costo de envío a domicilio (flete) basado en las coordenadas geográficas del cliente. Se debe ejecutar ÚNICAMENTE cuando el cliente envía su ubicación o proporciona coordenadas.',
+                    'parameters' => [
+                        'type' => 'OBJECT',
+                        'properties' => [
+                            'coordenadas_cliente' => [
+                                'type' => 'STRING', 
+                                'description' => 'Las coordenadas de latitud y longitud del cliente, separadas por coma. Ejemplo: "20.6736, -103.344"'
+                            ]
+                        ],
+                        'required' => ['coordenadas_cliente']
+                    ]
+                ]
+            ]
+        ];
+    }
+
+    public function executeWaBotTool($name, $args, $contacto_id = null) {
+        if ($name === 'logistica_cotizar_envio_whatsapp') {
+            $coords_cliente_str = $args['coordenadas_cliente'] ?? '';
+            $coords_cliente = array_map('floatval', explode(',', $coords_cliente_str));
+
+            if (count($coords_cliente) !== 2) {
+                return ["error" => "Coordenadas inválidas. Deben ser dos números separados por coma."];
+            }
+
+            $db = Database::getInstance();
+            try {
+                // 1. Obtener coordenadas de la sucursal y la tarifa de envío por distancia
+                $config_rows = $db->query("SELECT clave, valor FROM logistica_configuracion WHERE clave IN ('latitud_sucursal', 'longitud_sucursal')")->fetchAll();
+                $config = []; foreach ($config_rows as $r) $config[$r['clave']] = $r['valor'];
+                $tarifa = $db->query("SELECT * FROM logistica_tarifas WHERE tipo = 'distancia' AND estado = 'activo' LIMIT 1")->fetch();
+
+                if (empty($config['latitud_sucursal']) || empty($config['longitud_sucursal']) || !$tarifa) {
+                    return ["error" => "La configuración de logística (coordenadas de sucursal o tarifa de distancia) no está completa."];
+                }
+
+                // 2. Calcular distancia en KM (Fórmula de Haversine)
+                $lat_origen = deg2rad($config['latitud_sucursal']);
+                $lon_origen = deg2rad($config['longitud_sucursal']);
+                $lat_destino = deg2rad($coords_cliente[0]);
+                $lon_destino = deg2rad($coords_cliente[1]);
+
+                $dlat = $lat_destino - $lat_origen;
+                $dlon = $lon_destino - $lon_origen;
+
+                $a = sin($dlat / 2) * sin($dlat / 2) + cos($lat_origen) * cos($lat_destino) * sin($dlon / 2) * sin($dlon / 2);
+                $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+                $distancia_km = 6371 * $c; // Radio de la Tierra en km
+
+                // 3. Calcular costo final
+                $costo_final = $tarifa['precio_base'];
+                if ($distancia_km > $tarifa['km_base']) {
+                    $km_extra = $distancia_km - $tarifa['km_base'];
+                    $costo_final += $km_extra * $tarifa['precio_km_extra'];
+                }
+
+                return [
+                    "mensaje_para_ia" => "El costo de envío a la ubicación del cliente es de $" . number_format($costo_final, 2) . ". Informa al cliente de este costo y pregúntale si desea continuar con el pedido.",
+                    "distancia_calculada_km" => round($distancia_km, 2),
+                    "costo_envio" => round($costo_final, 2)
+                ];
+
+            } catch (\Exception $e) {
+                return ["error" => "Error en la base de datos de logística: " . $e->getMessage()];
+            }
+        }
+        return ["error" => "Herramienta no encontrada en el módulo de Logística"];
+    }
 }

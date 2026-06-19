@@ -1,3 +1,4 @@
 /storage/
-/whatsapp-gateway/
+/whatsapp-gateway/*
+!/whatsapp-gateway/index.js
 /config.php

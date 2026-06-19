@@ -1,5 +1,4 @@
 <?php
-
 class IaController extends Controller {
     public function index() {
         auth_require();
@@ -18,6 +17,10 @@ class IaController extends Controller {
     private function saveToolsConfig($config) {
         $path = MODULES_PATH . '/ia/tools_config.json';
         file_put_contents($path, json_encode($config, JSON_PRETTY_PRINT));
+    }
+
+    private function getBotConfigPath() {
+        return MODULES_PATH . '/ia/config_bot.json';
     }
 
     public function herramientas() {
@@ -462,5 +465,33 @@ class IaController extends Controller {
         header('Content-Type: application/json');
         echo $jsonOutput;
         exit;
+    }
+
+    // --- ENDPOINTS PARA LA CONFIGURACIÓN DEL BOT ---
+
+    public function configuracion() {
+        auth_require();
+        // Asumimos que si puede ver whatsapp, puede configurar la IA.
+        // Podrías crear un permiso 'ia.configurar' si lo necesitas.
+        require_permission('whatsapp.ver');
+
+        $configPath = $this->getBotConfigPath();
+        $config = file_exists($configPath) ? json_decode(file_get_contents($configPath), true) : [];
+
+        $this->render('ia', 'configuracion', [
+            'titulo' => 'Configuración del Asistente IA',
+            'config' => $config
+        ]);
+    }
+
+    public function guardarConfiguracion() {
+        auth_require();
+        require_permission('whatsapp.ver');
+
+        $config['activar_bot_por_defecto'] = isset($_POST['activar_bot_por_defecto']);
+        $config['activar_bot_en_marketing'] = isset($_POST['activar_bot_en_marketing']);
+
+        file_put_contents($this->getBotConfigPath(), json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        redirect(base_url('ia/configuracion?success=1'));
     }
 }

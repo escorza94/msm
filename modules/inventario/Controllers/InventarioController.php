@@ -259,4 +259,56 @@ class InventarioController extends Controller {
             redirect(base_url("inventario/editar?id=$id&error=Error al actualizar. Verifique que no esté duplicando el código SKU."));
         }
     }
+
+    // --- HOOKS Y ENDPOINTS PARA OTROS MÓDULOS ---
+
+    /**
+     * Hook para el panel derecho del chat de WhatsApp.
+     * Provee un buscador de productos para que el asesor pueda enviar información rápidamente.
+     */
+    public function hookWhatsAppPanel($whatsapp_id) {
+        if (!has_permission('inventario.ver')) return null;
+
+        // Obtenemos los 3 productos más recientes para mostrar inicialmente
+        $db = Database::getInstance();
+        $productos_iniciales = $db->query("
+            SELECT i.id, i.sku, i.nombre, i.precio, i.stock,
+                   (SELECT ruta FROM inventario_imagenes img WHERE img.producto_id = i.id ORDER BY es_principal DESC, img.id ASC LIMIT 1) as imagen
+            FROM inventario i WHERE i.estado = 'activo' ORDER BY i.id DESC LIMIT 3
+        ")->fetchAll();
+
+        $data = [
+            'base_url' => base_url(),
+            'placeholder_url' => base_url('storage/assets/placeholder.png'),
+            'productos_iniciales' => $productos_iniciales
+        ];
+
+        // Usamos el método renderToString() del controlador base para capturar la vista como un string
+        $html = $this->renderToString('inventario', 'hooks/whatsapp_panel', $data);
+        
+        return ['order' => 20, 'html' => $html]; // order 20 para que aparezca arriba
+    }
+
+    public function ajaxBuscarProductos() {
+        auth_require();
+        require_permission('inventario.ver');
+        $q = sanitize($_GET['q'] ?? '');
+        if (strlen($q) < 2) {
+            json_response(['productos' => []]);
+            return;
+        }
+        $searchTerm = "%{$q}%";
+        $db = Database::getInstance();
+        $stmt = $db->prepare("
+            SELECT i.id, i.sku, i.nombre, i.precio, i.stock,
+                   (SELECT ruta FROM inventario_imagenes img WHERE img.producto_id = i.id ORDER BY es_principal DESC, img.id ASC LIMIT 1) as imagen
+            FROM inventario i
+            WHERE (i.sku LIKE ? OR i.nombre LIKE ?) AND i.estado = 'activo'
+            LIMIT 5
+        ");
+        $stmt->execute([$searchTerm, $searchTerm]);
+        $productos = $stmt->fetchAll();
+
+        json_response(['productos' => $productos]);
+    }
 }

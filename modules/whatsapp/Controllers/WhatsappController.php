@@ -111,18 +111,29 @@ class WhatsappController extends Controller {
             }
         }
 
+        $mensaje_ids = [];
         $stmt = $db->prepare("INSERT INTO wa_mensajes (contacto_id, usuario_id, direccion, tipo, contenido, estado) VALUES (?, ?, 'saliente', ?, ?, 'enviado')");
-        if (!empty($archivo) && !empty($mensaje)) { $stmt->execute([$contacto_id, $usuario_id, $tipo, $contenidoDb]); $stmt->execute([$contacto_id, $usuario_id, 'texto', $mensaje]); } 
-        else { $stmt->execute([$contacto_id, $usuario_id, $tipo, !empty($archivo) ? $contenidoDb : $mensaje]); }
+        
+        if (!empty($archivo)) {
+            $stmt->execute([$contacto_id, $usuario_id, $tipo, $contenidoDb]);
+            $mensaje_ids[] = $db->lastInsertId();
+        }
+        if (!empty($mensaje)) {
+            $stmt->execute([$contacto_id, $usuario_id, 'texto', $mensaje]);
+            $mensaje_ids[] = $db->lastInsertId();
+        }
         
         // Apagar IA automáticamente cuando un humano interviene
         $db->prepare("UPDATE wa_contactos SET bot_activo = 0 WHERE id = ?")->execute([$contacto_id]);
+
+        // Preparamos el payload para Node.js, incluyendo los IDs de la base de datos
+        $payloadNode = ['numero' => $numero, 'mensaje' => $mensaje, 'archivo' => $archivo, 'nombreArchivo' => $nombreArchivo, 'mensaje_ids' => $mensaje_ids];
 
         $ch = curl_init('http://localhost:3000/api/enviar');
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(['numero' => $numero, 'mensaje' => $mensaje, 'archivo' => $archivo, 'nombreArchivo' => $nombreArchivo]));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payloadNode));
         $response = curl_exec($ch);
         curl_close($ch);
         json_response(['status' => 'success', 'node_response' => json_decode($response)]);
@@ -175,9 +186,14 @@ class WhatsappController extends Controller {
         $stmt = $db->prepare("SELECT id FROM wa_contactos WHERE whatsapp_id = ?"); $stmt->execute([$whatsapp_id]);
         if ($contacto = $stmt->fetch()) { $contacto_id = $contacto['id']; } 
         else {
+            // LEER CONFIGURACIÓN GLOBAL DEL BOT
+            $botConfigPath = MODULES_PATH . '/ia/config_bot.json';
+            $botConfig = file_exists($botConfigPath) ? json_decode(file_get_contents($botConfigPath), true) : ['activar_bot_por_defecto' => true];
+            $botInicial = $botConfig['activar_bot_por_defecto'] ? 1 : 0;
+
             $tipo_chat = strpos($whatsapp_id, '@g.us') !== false ? 'grupo' : ($whatsapp_id === 'status@broadcast' ? 'estado' : 'individual');
-            $stmt = $db->prepare("INSERT INTO wa_contactos (whatsapp_id, tipo_chat, nombre, etiqueta) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$whatsapp_id, $tipo_chat, $nombre, 'nuevo']);
+            $stmt = $db->prepare("INSERT INTO wa_contactos (whatsapp_id, tipo_chat, nombre, etiqueta, bot_activo) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$whatsapp_id, $tipo_chat, $nombre, 'nuevo', $botInicial]);
             $contacto_id = $db->lastInsertId();
         }
         $estado = $direccion === 'saliente' ? 'enviado' : 'recibido';
@@ -191,9 +207,9 @@ class WhatsappController extends Controller {
         $es_campana = false;
         if ($direccion === 'entrante' && $tipo === 'texto' && !empty($mensaje)) {
             try {
-                // Buscamos coincidencia exacta o ignorando mayúsculas/espacios
-                $stmtCampana = $db->prepare("SELECT * FROM marketing_campanas WHERE estado = 'activo' AND LOWER(TRIM(texto_disparador)) = LOWER(TRIM(?)) LIMIT 1");
-                $stmtCampana->execute([$mensaje]);
+                // Búsqueda flexible: el mensaje del cliente DEBE CONTENER el texto disparador.
+                $stmtCampana = $db->prepare("SELECT * FROM marketing_campanas WHERE estado = 'activo' AND ? LIKE CONCAT('%', LOWER(TRIM(texto_disparador)), '%') LIMIT 1");
+                $stmtCampana->execute([strtolower($mensaje)]);
                 $campana = $stmtCampana->fetch();
                 
                 if ($campana) {
@@ -215,9 +231,15 @@ class WhatsappController extends Controller {
                     // 2. Aplicar etiqueta y estado del bot según campaña
                     $updates = [];
                     $params = [];
+                    $botConfigPath = MODULES_PATH . '/ia/config_bot.json';
+                    $botConfig = file_exists($botConfigPath) ? json_decode(file_get_contents($botConfigPath), true) : ['activar_bot_en_marketing' => true];
+
                     if (!empty($campana['etiqueta_contacto'])) { $updates[] = "etiqueta = ?"; $params[] = $campana['etiqueta_contacto']; }
-                    $updates[] = "bot_activo = ?"; $params[] = $campana['activar_bot'] ? 1 : 0;
                     
+                    // Solo activa el bot si la campaña lo indica Y la configuración global lo permite
+                    if ($botConfig['activar_bot_en_marketing'] && $campana['activar_bot']) {
+                        $updates[] = "bot_activo = 1";
+                    }
                     if (count($updates) > 0) {
                         $params[] = $contacto_id;
                         $db->prepare("UPDATE wa_contactos SET " . implode(", ", $updates) . " WHERE id = ?")->execute($params);
@@ -534,5 +556,23 @@ class WhatsappController extends Controller {
             return ["mensaje" => "Se ha desactivado el bot. Un humano responderá en breve. Despídete del cliente amablemente."];
         }
         return ["error" => "Herramienta no encontrada"];
+    }
+
+    /**
+     * Endpoint para que el frontend (vía AJAX) notifique al backend
+     * sobre un cambio de estado de un mensaje (entregado, leido).
+     */
+    public function estado() {
+        auth_require();
+        require_permission('whatsapp.ver');
+        
+        $data = json_decode(file_get_contents('php://input'), true);
+        $mensaje_id = intval($data['mensaje_id'] ?? 0);
+        $estado = sanitize($data['estado'] ?? '');
+
+        if ($mensaje_id > 0 && in_array($estado, ['enviado', 'entregado', 'leido', 'fallido'])) {
+            Database::getInstance()->prepare("UPDATE wa_mensajes SET estado = ? WHERE id = ?")->execute([$estado, $mensaje_id]);
+        }
+        json_response(['status' => 'ok']);
     }
 }

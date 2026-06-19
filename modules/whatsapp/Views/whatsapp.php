@@ -243,7 +243,18 @@
             // Consultar Módulos
             fetch(`<?= base_url('whatsapp/panelCrm') ?>?whatsapp_id=${encodeURIComponent(whatsappId)}`)
                 .then(res => res.json())
-                .then(data => { if(data.html) infoPanel.innerHTML = data.html; })
+                .then(data => { 
+                    if(data.html) {
+                        infoPanel.innerHTML = data.html;
+                        // Forzar la ejecución de los scripts inyectados, que por defecto no se ejecutan.
+                        const scripts = infoPanel.querySelectorAll('script');
+                        scripts.forEach(script => {
+                            const newScript = document.createElement('script');
+                            newScript.textContent = script.textContent;
+                            document.body.appendChild(newScript).parentNode.removeChild(newScript);
+                        });
+                    }
+                })
                 .catch(err => { infoPanel.innerHTML = '<div class="text-center mt-10 text-red-500 text-sm"><i class="fas fa-exclamation-triangle mb-2"></i><br>Error al cargar contexto.</div>'; });
                 
         } else {
@@ -300,7 +311,7 @@
                 const oldHeight = chatMessages.scrollHeight;
                 const fragment = document.createDocumentFragment();
                 mensajes.forEach(msg => {
-                    fragment.appendChild(crearElementoMensaje(msg.contenido, msg.direccion === 'saliente', msg.fecha_registro, msg.tipo, msg.nombre_usuario, msg.usuario_id, msg.es_bot)); 
+                    fragment.appendChild(crearElementoMensaje(msg.contenido, msg.direccion === 'saliente', msg.fecha_registro, msg.tipo, msg.nombre_usuario, msg.usuario_id, msg.es_bot, 'msg-db-' + msg.id, msg.estado)); 
                 });
 
                 if (inicial) { chatMessages.appendChild(fragment); chatMessages.scrollTop = chatMessages.scrollHeight; } 
@@ -319,10 +330,11 @@
 
     document.getElementById('chat-messages').addEventListener('scroll', function() { if (this.scrollTop === 0) cargarMensajes(false); });
 
-    function crearElementoMensaje(texto, esSaliente, fecha = '', tipo = 'texto', remitente = null, usuario_id = null, es_bot = 0) {
+    function crearElementoMensaje(texto, esSaliente, fecha = '', tipo = 'texto', remitente = null, usuario_id = null, es_bot = 0, msgId = null, status = 'sent') {
         const timeStr = fecha ? new Date(fecha).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         const msgDiv = document.createElement('div');
         msgDiv.className = `relative z-10 max-w-[75%] p-2.5 rounded-lg text-sm shadow-sm ${esSaliente ? 'bg-green-100 self-end rounded-tr-none' : 'bg-white self-start rounded-tl-none'}`;
+        if (msgId) msgDiv.id = msgId;
         
         let urlArchivo = texto;
         if (texto && texto.startsWith('storage/')) urlArchivo = '<?= rtrim(base_url(), '/') ?>/' + texto;
@@ -395,19 +407,30 @@
             nombreMostrar = '🤖 Asistente IA';
         }
 
+        let statusIcon = '';
+        if (esSaliente) {
+            if (status === 'leido') statusIcon = '<i class="fas fa-check-double text-blue-400"></i>';
+            else if (status === 'entregado') statusIcon = '<i class="fas fa-check-double text-gray-400"></i>';
+            else if (status === 'enviado') statusIcon = '<i class="fas fa-check text-gray-400"></i>';
+            else if (status === 'fallido') statusIcon = '<i class="fas fa-exclamation-circle text-red-500"></i>';
+            else statusIcon = '<i class="fas fa-clock text-gray-400"></i>'; // 'enviando' o por defecto
+        }
+
         msgDiv.innerHTML = `
             <div class="text-[10px] font-bold mb-1 ${esSaliente ? 'text-green-700' : 'text-indigo-500'} opacity-80">${nombreMostrar}</div>
             ${contenidoHtml}
-            <div class="text-[10px] text-gray-500 mt-1 text-right">${timeStr} ${esSaliente ? '<i class="fas fa-check-double text-blue-400"></i>' : ''}</div>
+            <div class="text-[10px] text-gray-500 mt-1 text-right">${timeStr} <span class="msg-status-icon">${statusIcon}</span></div>
         `;
         return msgDiv;
     }
 
-    window.renderizarMensaje = function(texto, esSaliente, fecha = '', tipo = 'texto', remitente = null, usuario_id = null, es_bot = 0) {
+    window.renderizarMensaje = function(texto, esSaliente, fecha = '', tipo = 'texto', remitente = null, usuario_id = null, es_bot = 0, msgId = null, status = 'sent') {
         if (!texto && tipo === 'texto') return;
         const chatMessages = document.getElementById('chat-messages');
-        chatMessages.appendChild(crearElementoMensaje(texto, esSaliente, fecha, tipo, remitente, usuario_id, es_bot));
+        const msgElement = crearElementoMensaje(texto, esSaliente, fecha, tipo, remitente, usuario_id, es_bot, msgId, status);
+        chatMessages.appendChild(msgElement);
         chatMessages.scrollTop = chatMessages.scrollHeight;
+        return msgElement;
     };
 
     window.enviarMensaje = function() {
@@ -431,6 +454,72 @@
         
         fetch('<?= base_url('whatsapp/enviar') ?>', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
         .catch(err => console.error("Error al enviar:", err));
+    };
+
+    /**
+     * Función para que los asesores envíen mensajes pre-formateados desde el panel CRM.
+     * @param {string} mensaje - El texto a enviar.
+     * @param {string|null} urlArchivo - La URL completa de una imagen para adjuntar.
+     */
+    window.enviarMensajeAsistido = async function(mensaje = '', urlArchivo = null) {
+        if ((!mensaje && !urlArchivo) || !chatActual.whatsapp_id) return;
+
+        let archivoBase64 = null;
+        if (urlArchivo) {
+            try {
+                // Convertir la URL de la imagen a Base64 para poder enviarla
+                const response = await fetch(urlArchivo);
+                const blob = await response.blob();
+                archivoBase64 = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            } catch (e) {
+                console.error("Error al convertir imagen a Base64", e);
+                alert("No se pudo cargar la imagen del producto para enviarla.");
+                return;
+            }
+        }
+        const payload = { numero: chatActual.whatsapp_id, mensaje: mensaje, contacto_id: chatActual.id, archivo: archivoBase64, nombreArchivo: urlArchivo ? urlArchivo.split('/').pop() : '' };
+        
+        // --- INICIO: Actualización de UI Optimista ---
+        const tempMsgId = 'temp-msg-' + Date.now();
+        let msgElements = [];
+
+        if (archivoBase64) {
+            let tipoVis = 'archivo'; if (archivoBase64.startsWith('data:image')) tipoVis = 'imagen';
+            msgElements.push(renderizarMensaje(archivoBase64, true, '', tipoVis, NOMBRE_ASESOR_ACTUAL, ID_ASESOR_ACTUAL, 0, tempMsgId + '-file', 'enviando'));
+        }
+        if (mensaje) {
+            msgElements.push(renderizarMensaje(mensaje, true, '', 'texto', NOMBRE_ASESOR_ACTUAL, ID_ASESOR_ACTUAL, 0, tempMsgId + '-text', 'enviando'));
+        }
+        actualizarListaChats(chatActual.whatsapp_id, mensaje || 'Adjunto', mensaje ? 'texto' : 'imagen', NOMBRE_ASESOR_ACTUAL);
+        // --- FIN: Actualización de UI Optimista ---
+
+        fetch('<?= base_url('whatsapp/enviar') ?>', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+            .then(res => res.json())
+            .then(data => {
+                const newStatus = (data.status === 'success') ? 'enviado' : 'fallido';
+                const newIcon = (newStatus === 'enviado') ? '<i class="fas fa-check text-gray-400"></i>' : '<i class="fas fa-exclamation-circle text-red-500"></i>';
+                msgElements.forEach(el => {
+                    const statusEl = el.querySelector('.msg-status-icon');
+                    if (statusEl) statusEl.innerHTML = newIcon;
+                    // Guardamos el ID real del mensaje de la BD en el elemento temporal
+                    if (data.node_response && data.node_response.mensaje_ids) {
+                        const realId = el.id.includes('-file') ? data.node_response.mensaje_ids[0] : data.node_response.mensaje_ids.slice(-1)[0];
+                        el.id = 'msg-db-' + realId;
+                    }
+                });
+            })
+            .catch(err => {
+                console.error("Error al enviar:", err);
+                msgElements.forEach(el => {
+                    const statusEl = el.querySelector('.msg-status-icon');
+                    if (statusEl) statusEl.innerHTML = '<i class="fas fa-exclamation-circle text-red-500"></i>';
+                });
+            });
     };
 
     window.filtrarLista = function(tipo) {
@@ -502,10 +591,12 @@
             actualizarListaChats(data.whatsapp_id, data.mensaje, data.tipo || 'texto', data.nombre);
 
             if (chatActual.whatsapp_id === data.whatsapp_id) {
-                if (data.archivo) {
+                // Si el mensaje tiene un archivo adjunto (y no es una ubicación)
+                if (data.archivo && data.tipo !== 'location') {
                     let tipoVis = 'archivo'; if (data.archivo.startsWith('data:image')) tipoVis = 'imagen'; else if (data.archivo.startsWith('data:audio') || data.archivo.startsWith('data:application/ogg')) tipoVis = 'audio'; else if (data.archivo.startsWith('data:video')) tipoVis = 'video';
                     renderizarMensaje(data.archivo, false, data.timestamp * 1000, tipoVis, data.nombre);
                 }
+                // Si el mensaje (con o sin archivo) tiene texto, lo renderizamos también.
                 if (data.mensaje) {
                     renderizarMensaje(data.mensaje, false, data.timestamp * 1000, 'texto', data.nombre);
                 }
@@ -528,6 +619,40 @@
             }
         });
         
+        // --- INICIO DE LA CORRECCIÓN ---
+        // Escuchar el nuevo evento para las respuestas del bot
+        socket.on('mensaje_bot_enviado', (data) => {
+            console.log('Respuesta del bot recibida:', data);
+            actualizarListaChats(data.whatsapp_id, data.mensaje, data.tipo || 'texto', '🤖 Asistente IA');
+            if (chatActual.whatsapp_id === data.whatsapp_id) {
+                renderizarMensaje(data.mensaje, true, Date.now(), 'texto', '🤖 Asistente IA', null, 1, null, 'enviado');
+            }
+        });
+        // --- FIN DE LA CORRECCIÓN ---
+
+        socket.on('ack_update', (data) => {
+            // data = { id: 123, status: 'entregado' }
+            // El servidor Node.js envía el ID de la base de datos en la propiedad 'id'.
+            // Lo buscamos en el DOM para actualizar su ícono.
+            const msgElement = document.getElementById('msg-db-' + data.id);
+            if (msgElement) {
+                const statusEl = msgElement.querySelector('.msg-status-icon');
+                if (statusEl) {
+                    let newIcon = '';
+                    if (data.status === 'entregado') newIcon = '<i class="fas fa-check-double text-gray-400"></i>';
+                    else if (data.status === 'leido') newIcon = '<i class="fas fa-check-double text-blue-400"></i>';
+                    if (newIcon) statusEl.innerHTML = newIcon;
+                }
+
+                // --- CORRECCIÓN: Notificar al backend para persistir el estado ---
+                fetch('<?= base_url('whatsapp/estado') ?>', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mensaje_id: data.id, estado: data.status })
+                }).catch(err => console.error('Error al actualizar estado en BD:', err));
+            }
+        });
+
         document.getElementById('btn-send').addEventListener('click', enviarMensaje);
     });
 </script>

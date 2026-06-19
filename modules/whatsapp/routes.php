@@ -12,3 +12,4 @@ $router->get('/whatsapp/configuracion', 'WhatsappController@configuracion');
 $router->post('/whatsapp/configuracion', 'WhatsappController@guardarConfiguracion');
 $router->post('/whatsapp/toggleBot', 'WhatsappController@toggleBot');
 $router->get('/whatsapp/panelCrm', 'WhatsappController@obtenerPanelCrm');
+$router->post('/whatsapp/estado', 'WhatsappController@estado');
